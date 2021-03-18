@@ -1,0 +1,24 @@
+{
+	"name": "octarine-scripts",
+	"version": "1.0.0",
+	"description": "Octarine: Scripts",
+	"devDependencies": {
+		"tslint": "beta",
+		"typescript": "next"
+	},
+	"scripts": {
+		"check-types": "npx tsc",
+		"check-types-watch": "npx tsc --watch",
+		"check-circular": "npx madge --circular scripts",
+		"lint": "npx tslint --fix -p ."
+	},
+	"contributors": [
+		"moofMonkey"
+	],
+	"license": "GNU General Public License v3.0",
+	"repository": {
+		"type": "git",
+		"directory": "/",
+		"url": "https://gitlab.com/FNT_Rework/octarine-scripts/"
+	}
+}
