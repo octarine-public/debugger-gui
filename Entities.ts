@@ -48,7 +48,7 @@ function DrawTrees(size: Vector2): void {
 const Creeps = EntityManager.GetEntitiesByClass(Creep)
 function DrawCreeps(size: Vector2): void {
 	for (const creep of Creeps) {
-		if (!creep.IsVisible || !creep.IsAlive || !creep.IsSpawned)
+		if (/*!creep.IsVisible || */!creep.IsAlive/* || !creep.IsSpawned*/)
 			continue
 		let path = PathX.Heroes(creep.Name, false)
 		if (creep.IsLaneCreep)
