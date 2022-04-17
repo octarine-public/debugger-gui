@@ -1,1 +1,1 @@
-export * from "gitlab.com/FNT_Rework/wrapper/wrapper/Imports"
+export * from "github.com/octarine-public/wrapper/wrapper/Imports"
