@@ -1,6 +1,6 @@
+import { PathX } from "immortal-core/Imports"
 import { RootMenu } from "./menu"
-import { Ability, ArrayExtensions, Color, Creep, DOTA_RUNES, Entity, EntityManager, EventsSDK, GUIInfo, Hero, LocalPlayer, ParticlesSDK, RendererSDK, Rune, Team, Tree, Unit, Vector2 } from "./wrapper/Imports"
-import { PathX } from "./X-Core/Imports"
+import { Ability, ArrayExtensions, Color, Creep, DOTA_RUNES, Entity, EntityManager, EventsSDK, GUIInfo, Hero, LocalPlayer, ParticlesSDK, RendererSDK, Rune, Tree, Unit, Vector2 } from "./wrapper/Imports"
 
 function GetEntityTeamColor(ent: Entity): Color {
 	if (ent.IsNeutral)
@@ -50,12 +50,7 @@ function DrawCreeps(size: Vector2): void {
 	for (const creep of Creeps) {
 		if (/*!creep.IsVisible || */!creep.IsAlive/* || !creep.IsSpawned*/)
 			continue
-		let path = PathX.Heroes(creep.Name, false)
-		if (creep.IsLaneCreep)
-			path = creep.Team === Team.Radiant
-				? PathX.Heroes("npc_dota_hero_creep_radiant", false)
-				: PathX.Heroes("npc_dota_hero_creep_dire", false)
-		RenderEntity(creep, size, path)
+		RenderEntity(creep, size, PathX.Unit({ name: creep.Name }))
 	}
 }
 
@@ -63,7 +58,7 @@ const Heroes = EntityManager.GetEntitiesByClass(Hero)
 function DrawHeroes(size: Vector2): void {
 	for (const hero of Heroes)
 		if (hero.IsVisible && hero.IsAlive)
-			RenderEntity(hero, size, PathX.Heroes(hero.Name))
+			RenderEntity(hero, size, PathX.Unit({ name: hero.Name }))
 }
 
 const Runes = EntityManager.GetEntitiesByClass(Rune)

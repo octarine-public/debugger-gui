@@ -23,7 +23,8 @@
 		],
 		"indent": [
 			true,
-			"tabs"
+			"tabs",
+			4
 		],
 		"curly": false,
 		"arrow-parens": [
@@ -74,6 +75,11 @@
 		"no-consecutive-blank-lines": true,
 		"no-unnecessary-type-assertion": true,
 		"ordered-imports": true,
+		"quotemark": [
+			true,
+			"double",
+			"avoid-escape"
+		],
 		"trailing-comma": [
 			true,
 			{
