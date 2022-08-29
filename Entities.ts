@@ -1,6 +1,54 @@
-import { PathX } from "immortal-core/Imports"
 import { RootMenu } from "./menu"
 import { Ability, ArrayExtensions, Color, Creep, DOTA_RUNES, Entity, EntityManager, EventsSDK, GUIInfo, Hero, LocalPlayer, ParticlesSDK, RendererSDK, Rune, Tree, Unit, Vector2 } from "./wrapper/Imports"
+
+function UnitPath(name: string): string {
+	if (name.includes("npc_dota_hero_"))
+		return `panorama/images/heroes/${name}_png.vtex_c`
+
+	if (name.includes("_courier"))
+		return `github.com/octarine-private/immortal-core/scripts_files/images/couriers/radiant.png`
+
+	if (name.includes("badguys_tower") || name.includes("goodguys_tower"))
+		return "panorama/images/heroes/npc_dota_hero_tower_radiant_png.vtex_c"
+
+	if (name.includes("eidolon"))
+		return `panorama/images/heroes/npc_dota_eidolon_png.vtex_c`
+
+	if (name.includes("familiar"))
+		return `panorama/images/heroes/npc_dota_visage_familiar_png.vtex_c`
+
+	if (name.includes("shaman_ward"))
+		return `panorama/images/heroes/npc_dota_shadow_shaman_ward_png.vtex_c`
+
+	if (name.includes("golem"))
+		return `panorama/images/heroes/npc_dota_warlock_golem_png.vtex_c`
+
+	if (name.includes("creep_badguys"))
+		return `panorama/images/heroes/npc_dota_hero_creep_dire_png.vtex_c`
+
+	if (name.includes("creep_goodguys"))
+		return `panorama/images/heroes/npc_dota_hero_creep_radiant_png.vtex_c`
+
+	if (name.includes("druid_bear"))
+		return `panorama/images/heroes/npc_dota_lone_druid_bear_png.vtex_c`
+
+	if (name.includes("lycan_wolf"))
+		return `panorama/images/heroes/npc_dota_lycan_wolf_png.vtex_c`
+
+	if (name.includes("undying_zombie"))
+		return `panorama/images/heroes/npc_dota_unit_undying_zombie_png.vtex_c`
+
+	if (name.includes("necronomicon_archer"))
+		return `panorama/images/heroes/npc_dota_necronomicon_archer_png.vtex_c`
+
+	if (name.includes("necronomicon_warrior"))
+		return `panorama/images/heroes/npc_dota_necronomicon_warrior_png.vtex_c`
+
+	if (name.includes("roshan"))
+		return "panorama/images/spellicons/roshan_halloween_angry_png.vtex_c"
+
+	return `panorama/images/heroes/${name}_png.vtex_c`
+}
 
 function GetEntityTeamColor(ent: Entity): Color {
 	if (ent.IsNeutral)
@@ -50,7 +98,7 @@ function DrawCreeps(size: Vector2): void {
 	for (const creep of Creeps) {
 		if (/*!creep.IsVisible || */!creep.IsAlive/* || !creep.IsSpawned*/)
 			continue
-		RenderEntity(creep, size, PathX.Unit({ name: creep.Name }))
+		RenderEntity(creep, size, UnitPath(creep.Name))
 	}
 }
 
@@ -58,7 +106,7 @@ const Heroes = EntityManager.GetEntitiesByClass(Hero)
 function DrawHeroes(size: Vector2): void {
 	for (const hero of Heroes)
 		if (hero.IsVisible && hero.IsAlive)
-			RenderEntity(hero, size, PathX.Unit({ name: hero.Name }))
+			RenderEntity(hero, size, UnitPath(hero.Name))
 }
 
 const Runes = EntityManager.GetEntitiesByClass(Rune)
@@ -92,7 +140,7 @@ function DrawRunes(size: Vector2): void {
 			default:
 				continue
 		}
-		RenderEntity(rune, size, PathX.Runes(rune_name))
+		RenderEntity(rune, size, `github.com/octarine-private/immortal-core/scripts_files/images/runes/${rune_name}.png`)
 	}
 }
 
