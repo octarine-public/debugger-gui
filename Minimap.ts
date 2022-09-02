@@ -13,8 +13,12 @@ function DrawMinimapBackground(): void {
 		minimap_block,
 	)
 
+	let minimap_simple = ConVars.Get("dota_minimap_simple_background")
+	if (typeof minimap_simple !== "number")
+		minimap_simple = undefined
+
 	const minimap = GUIInfo.Minimap.MinimapRenderBounds,
-		material = ConVars.GetInt("dota_minimap_simple_background") !== 0
+		material = minimap_simple !== 0
 			? MinimapSDK.CurrentMinimapOverview?.simple_material ?? MinimapSDK.CurrentMinimapOverview?.material ?? ""
 			: MinimapSDK.CurrentMinimapOverview?.material ?? MinimapSDK.CurrentMinimapOverview?.simple_material ?? ""
 	if (material !== "") {
