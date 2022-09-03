@@ -1,5 +1,5 @@
 import { RootMenu } from "./menu"
-import { Barrack, Building, Color, Courier, Creep, DOTA_RUNES, DOTA_SHOP_TYPE, Entity, EntityManager, Fort, Fountain, GUIInfo, HallOfFame, Hero, MinimapSDK, NeutralItemStash, NeutralSpawner, NeutralSpawnerType, RendererSDK, RoshanSpawner, Rune, Shop, Siege, Team, Tower } from "./wrapper/Imports"
+import { Barrack, Building, Color, ConVarsSDK, Courier, Creep, DOTA_RUNES, DOTA_SHOP_TYPE, Entity, EntityManager, Fort, Fountain, GUIInfo, HallOfFame, Hero, MinimapSDK, NeutralItemStash, NeutralSpawner, NeutralSpawnerType, RendererSDK, RoshanSpawner, Rune, Shop, Siege, Team, Tower } from "./wrapper/Imports"
 
 function DrawMinimapBackground(): void {
 	const minimap_block = GUIInfo.Minimap.Minimap
@@ -13,12 +13,8 @@ function DrawMinimapBackground(): void {
 		minimap_block,
 	)
 
-	let minimap_simple = ConVars.Get("dota_minimap_simple_background")
-	if (typeof minimap_simple !== "number")
-		minimap_simple = undefined
-
 	const minimap = GUIInfo.Minimap.MinimapRenderBounds,
-		material = minimap_simple !== 0
+		material = ConVarsSDK.GetBoolean("dota_minimap_simple_background", true)
 			? MinimapSDK.CurrentMinimapOverview?.simple_material ?? MinimapSDK.CurrentMinimapOverview?.material ?? ""
 			: MinimapSDK.CurrentMinimapOverview?.material ?? MinimapSDK.CurrentMinimapOverview?.simple_material ?? ""
 	if (material !== "") {
