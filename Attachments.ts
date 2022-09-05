@@ -1,5 +1,5 @@
+import { Color, ComputedAttachment, Entity, EntityManager, Input, RendererSDK, Vector2 } from "github.com/octarine-public/wrapper/wrapper/Imports"
 import { RootMenu } from "./menu"
-import { Color, ComputedAttachment, Entity, EntityManager, Input, RendererSDK, Vector2 } from "./wrapper/Imports"
 
 const AttachmentsNode = RootMenu.AddNode("Attachments")
 const State = AttachmentsNode.AddToggle("State", true),

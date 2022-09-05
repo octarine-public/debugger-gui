@@ -1,5 +1,5 @@
+import { Color, GUIInfo, RendererSDK, Vector2 } from "github.com/octarine-public/wrapper/wrapper/Imports"
 import { RootMenu } from "./menu"
-import { Color, GUIInfo, RendererSDK, Vector2 } from "./wrapper/Imports"
 
 const stored_frame_count = 60
 const last_frames_calls: number[] = []

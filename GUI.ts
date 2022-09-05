@@ -1,5 +1,5 @@
+import { Color, EventsSDK, GUIInfo, Input, InputEventSDK, Rectangle, RendererSDK, Vector2 } from "github.com/octarine-public/wrapper/wrapper/Imports"
 import { RootMenu } from "./menu"
-import { Color, EventsSDK, GUIInfo, Input, InputEventSDK, Rectangle, RendererSDK, Vector2 } from "./wrapper/Imports"
 
 declare global {
 	var INTERNAL_DEBUGGER_Step: () => void

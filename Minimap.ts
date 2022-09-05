@@ -1,5 +1,5 @@
+import { Barrack, Building, Color, ConVarsSDK, Courier, Creep, DOTA_RUNES, DOTA_SHOP_TYPE, Entity, EntityManager, Fort, Fountain, GUIInfo, HallOfFame, Hero, MinimapSDK, NeutralItemStash, NeutralSpawner, NeutralSpawnerType, RendererSDK, RoshanSpawner, Rune, Shop, Siege, Team, Tower } from "github.com/octarine-public/wrapper/wrapper/Imports"
 import { RootMenu } from "./menu"
-import { Barrack, Building, Color, ConVarsSDK, Courier, Creep, DOTA_RUNES, DOTA_SHOP_TYPE, Entity, EntityManager, Fort, Fountain, GUIInfo, HallOfFame, Hero, MinimapSDK, NeutralItemStash, NeutralSpawner, NeutralSpawnerType, RendererSDK, RoshanSpawner, Rune, Shop, Siege, Team, Tower } from "./wrapper/Imports"
 
 function DrawMinimapBackground(): void {
 	const minimap_block = GUIInfo.Minimap.Minimap

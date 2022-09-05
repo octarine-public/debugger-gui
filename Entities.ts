@@ -1,5 +1,5 @@
+import { Ability, ArrayExtensions, Color, Creep, DOTA_RUNES, Entity, EntityManager, EventsSDK, GUIInfo, Hero, LocalPlayer, ParticlesSDK, RendererSDK, Rune, Tree, Unit, Vector2 } from "github.com/octarine-public/wrapper/wrapper/Imports"
 import { RootMenu } from "./menu"
-import { Ability, ArrayExtensions, Color, Creep, DOTA_RUNES, Entity, EntityManager, EventsSDK, GUIInfo, Hero, LocalPlayer, ParticlesSDK, RendererSDK, Rune, Tree, Unit, Vector2 } from "./wrapper/Imports"
 
 function UnitPath(name: string): string {
 	if (name.includes("npc_dota_hero_"))
