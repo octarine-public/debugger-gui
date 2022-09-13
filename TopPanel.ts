@@ -1,4 +1,4 @@
-import { Color, EntityManager, GameRules, GUIInfo, Player, PlayerResource, Rectangle, RendererSDK, Team, UnitData, Vector2 } from "github.com/octarine-public/wrapper/wrapper/Imports"
+import { Color, EntityManager, GameRules, GUIInfo, Player, PlayerResource, Rectangle, RendererSDK, Team, UnitData, Vector2 } from "github.com/octarine-public/wrapper/index"
 import { RootMenu } from "./menu"
 
 function DrawTopPanelHeroIcon(rect: Rectangle, hero_name: string, is_dead: boolean): void {

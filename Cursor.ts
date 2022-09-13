@@ -1,4 +1,4 @@
-import { GUIInfo, Input, RendererSDK, Vector2 } from "github.com/octarine-public/wrapper/wrapper/Imports"
+import { GUIInfo, Input, RendererSDK, Vector2 } from "github.com/octarine-public/wrapper/index"
 import { RootMenu } from "./menu"
 
 const State = RootMenu.AddToggle("Show cursor")

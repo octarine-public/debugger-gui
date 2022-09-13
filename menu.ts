@@ -1,4 +1,4 @@
-import { EventsSDK, Menu } from "github.com/octarine-public/wrapper/wrapper/Imports"
+import { EventsSDK, Menu } from "github.com/octarine-public/wrapper/index"
 
 declare global {
 	var INTERNAL_DEBUGGER_Skip: (seconds: number) => void

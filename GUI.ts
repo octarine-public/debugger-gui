@@ -1,4 +1,4 @@
-import { Color, EventsSDK, GUIInfo, Input, InputEventSDK, Rectangle, RendererSDK, Vector2 } from "github.com/octarine-public/wrapper/wrapper/Imports"
+import { Color, EventsSDK, GUIInfo, Input, InputEventSDK, Rectangle, RendererSDK, Vector2 } from "github.com/octarine-public/wrapper/index"
 import { RootMenu } from "./menu"
 
 declare global {
