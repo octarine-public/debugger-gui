@@ -114,7 +114,7 @@ function DrawTimeOfDay(): void {
 
 const State = RootMenu.AddToggle("Top Panel", true)
 const Players = EntityManager.GetEntitiesByClass(Player)
-export async function DrawTopPanel(): Promise<void> {
+export  function DrawTopPanel(): void {
 	if (!State.value)
 		return
 	DrawTeamsBackground()
@@ -133,7 +133,7 @@ export async function DrawTopPanel(): Promise<void> {
 			? GUIInfo.TopBar.RadiantPlayersHeroImages[slot]
 			: GUIInfo.TopBar.DirePlayersHeroImages[slot]
 		const is_dead = data.RespawnSeconds > 0
-		DrawTopPanelHeroIcon(rect, await UnitData.GetHeroNameByID(data.SelectedHeroID), is_dead)
+		DrawTopPanelHeroIcon(rect,  UnitData.GetHeroNameByID(data.SelectedHeroID), is_dead)
 		if (is_dead)
 			DrawTopPanelRespawnTimer(
 				player.Team === Team.Radiant

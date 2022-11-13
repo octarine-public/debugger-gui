@@ -5,11 +5,11 @@ declare global {
 }
 
 export const RootMenu = Menu.AddEntry("Debugger GUI", "panorama/images/plus/achievements/battlecup_icon_png.vtex_c")
-RootMenu.AddKeybind("Emit fake Tick").OnRelease(async () => {
-	await EventsSDK.emit("PreDataUpdate", false)
-	await EventsSDK.emit("MidDataUpdate", false)
-	await EventsSDK.emit("PostDataUpdate", false)
-	await EventsSDK.emit("Tick", false, 0)
+RootMenu.AddKeybind("Emit fake Tick").OnRelease(() => {
+	EventsSDK.emit("PreDataUpdate", false)
+	EventsSDK.emit("MidDataUpdate", false)
+	EventsSDK.emit("PostDataUpdate", false)
+	EventsSDK.emit("Tick", false, 0)
 })
 
 const SkipMenu = RootMenu.AddNode("Skip into the game")
