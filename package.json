@@ -20,10 +20,11 @@
 	"scripts": {
 		"check-types": "npx tsc",
 		"check-types-watch": "npx tsc --watch",
-		"check-circular": "npx madge --circular scripts",
-		"lint": "npx tslint --fix -p ."
+		"upgrade-pack": "yarn upgrade-interactive --latest",
+		"check-circular": "npx madge --circular index.ts",
+		"lint": "eslint -c .eslintrc.json --ext .ts --fix ."
 	},
-	"license": "GNU General Public License v3.0",
+	"license": "GPL-3.0-or-later",
 	"repository": {
 		"type": "git",
 		"directory": "/",
