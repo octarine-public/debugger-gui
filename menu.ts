@@ -4,7 +4,10 @@ declare global {
 	var INTERNAL_DEBUGGER_Skip: (seconds: number) => void
 }
 
-export const RootMenu = Menu.AddEntry("Debugger GUI", "panorama/images/plus/achievements/battlecup_icon_png.vtex_c")
+export const RootMenu = Menu.AddEntry(
+	"Debugger GUI",
+	"panorama/images/plus/achievements/battlecup_icon_png.vtex_c"
+)
 RootMenu.AddKeybind("Emit fake Tick").OnRelease(() => {
 	EventsSDK.emit("PreDataUpdate", false)
 	EventsSDK.emit("MidDataUpdate", false)

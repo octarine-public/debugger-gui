@@ -1,5 +1,6 @@
 {
 	"ignorePatterns": [
+		"global.ts",
 		"node_modules/**/*",
 		"scripts_files/**/*"
 	],
@@ -353,7 +354,8 @@
 			"singleQuote": false,
 			"printWidth": 100,
 			"tabWidth": 4,
-			"trailingComma": "none"
+			"trailingComma": "none",
+			"breakBeforeElse": true
 		}],
 		"@typescript-eslint/consistent-type-imports": ["error", {
 			// TODO: uncomment once we use ESBuild
@@ -377,9 +379,9 @@
 		"func-style": ["warn", "declaration", {
             "allowArrowFunctions": true
         }],
-		"brace-style": ["error", "1tbs", {
-            "allowSingleLine": false
-        }],
+		// "brace-style": ["error", "1tbs", {
+        //     "allowSingleLine": false
+        // }],
 		"curly": "off",
 		"object-curly-spacing": [
             "warn", 
