@@ -4,8 +4,18 @@
 	"description": "Debugger Gui",
 	"author": "MoofMonkey",
 	"devDependencies": {
-		"tslint": "beta",
-		"typescript": "next"
+		"@typescript-eslint/eslint-plugin": "^5.44.0",
+		"@typescript-eslint/parser": "^5.44.0",
+		"eslint": "^8.28.0",
+		"eslint-config-prettier": "^8.5.0",
+		"eslint-plugin-import": "^2.26.0",
+		"eslint-plugin-jsdoc": "^39.6.4",
+		"eslint-plugin-prettier": "^4.2.1",
+		"eslint-plugin-simple-import-sort": "^8.0.0",
+		"eslint-plugin-unicorn": "^45.0.0",
+		"eslint-plugin-unused-imports": "^2.0.0",
+		"prettier": "^2.8.0",
+		"typescript": "^4.9.3"
 	},
 	"scripts": {
 		"check-types": "npx tsc",
@@ -18,8 +28,5 @@
 		"type": "git",
 		"directory": "/",
 		"url": "https://github.com/octarine-public/debugger-gui"
-	},
-	"dependencies": {
-		"lint": "^0.7.0"
 	}
 }
