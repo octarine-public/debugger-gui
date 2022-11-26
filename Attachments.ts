@@ -3,8 +3,10 @@ import {
 	ComputedAttachment,
 	Entity,
 	EntityManager,
+	GameActivity,
 	Input,
 	RendererSDK,
+	Unit,
 	Vector2
 } from "github.com/octarine-public/wrapper/index"
 
@@ -20,11 +22,12 @@ function RenderAttachment(
 	color: Color,
 	name: string
 ): void {
-	const time = !GameTimeState.value ? attach.FrameCount / attach.FPS / 2 : ent.AnimationTime
+	const time = GameTimeState.value ? ent.AnimationTime : ent instanceof Unit ? ent.LastActivityAnimationPoint : ent.AnimationTime
 	const screen_pos = RendererSDK.WorldToScreen(
 		attach
 			.GetPosition(time + Offset.value / attach.FPS, ent.RotationRad, ent.ModelScale)
 			.AddForThis(ent.Position)
+			.AddScalarZ(ent.DeltaZ)
 	)
 	if (screen_pos === undefined) return
 	if (Input.CursorOnScreen.Distance(screen_pos) < 16) RendererSDK.Text(name, screen_pos, color)
@@ -35,7 +38,10 @@ export function DrawAttachments(): void {
 	if (!State.value) return
 	EntityManager.AllEntities.forEach(ent => {
 		if (!ent.IsVisible) return
-		ent.GetAttachments()?.forEach((attachment, name) => {
+		ent.GetAttachments(
+			ent instanceof Unit ? ent.LastActivity : GameActivity.ACT_DOTA_IDLE,
+			ent instanceof Unit ? ent.LastActivitySequenceVariant : 0,
+		)?.forEach((attachment, name) => {
 			let color: Color
 			switch (name) {
 				case "attach_hitloc":
