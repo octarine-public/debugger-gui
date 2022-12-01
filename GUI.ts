@@ -12,81 +12,84 @@ import {
 import { RootMenu } from "./menu"
 
 declare global {
-	var INTERNAL_DEBUGGER_Step: () => void
-	var INTERNAL_DEBUGGER_Restart: () => void
+	var INTERNAL_DEBUGGER_STEP: () => void
+	var INTERNAL_DEBUGGER_RESTART: () => void
 }
 
 const rewind = new Rectangle(),
-	play_resume = new Rectangle()
-let is_paused = true
+	playResume = new Rectangle()
+let isPaused = true
 function TogglePause(): void {
-	is_paused = !is_paused
-	latest_data_update = is_paused ? 0 : hrtime()
+	isPaused = !isPaused
+	latestDataUpdate = isPaused ? 0 : hrtime()
 }
 
 const GUINode = RootMenu.AddNode("Internal Debugger")
 const draw = GUINode.AddToggle("Draw", true)
 GUINode.AddKeybind("Play/Resume").OnPressed(() => TogglePause())
 const speed = GUINode.AddSlider("Speed", 1, 0, 80, 1)
-const buttons_background = new Color(0x16, 0x20, 0x34)
-let latest_data_update = 0
+const buttonsBackground = new Color(0x16, 0x20, 0x34)
+
+let latestDataUpdate = 0
 export function DrawGUI(): void {
-	if (globalThis.INTERNAL_DEBUGGER_Step === undefined) return
-	if (latest_data_update !== 0) {
-		const tick_time = 1000 / (30 * speed.value),
-			time_passed = hrtime() - latest_data_update
-		const ticks_passed = Math.floor(time_passed / tick_time)
-		if (ticks_passed !== 0) {
-			for (let i = 0; i < ticks_passed; i++) globalThis.INTERNAL_DEBUGGER_Step()
-			latest_data_update = 0
+	if (globalThis.INTERNAL_DEBUGGER_STEP === undefined) {
+		return
+	}
+	if (latestDataUpdate !== 0) {
+		const tickTime = 1000 / (30 * speed.value),
+			timePassed = hrtime() - latestDataUpdate
+		const ticksPassed = Math.floor(timePassed / tickTime)
+		if (ticksPassed !== 0) {
+			for (let i = 0; i < ticksPassed; i++) {
+				globalThis.INTERNAL_DEBUGGER_STEP()
+			}
+			latestDataUpdate = 0
 		}
 	}
-	if (!draw.value) return
-	const screen_size = RendererSDK.WindowSize
-	const button_size = new Vector2(
-		GUIInfo.ScaleWidth(32, screen_size),
-		GUIInfo.ScaleHeight(32, screen_size)
-	)
-	rewind.Width = play_resume.Width = button_size.x
-	rewind.Height = play_resume.Height = button_size.y
+	if (!draw.value) {
+		return
+	}
+	const screenSize = RendererSDK.WindowSize
+	const buttonSize = new Vector2(GUIInfo.ScaleWidth(32, screenSize), GUIInfo.ScaleHeight(32, screenSize))
+	rewind.Width = playResume.Width = buttonSize.x
+	rewind.Height = playResume.Height = buttonSize.y
 
-	const buttons_gap = 6
-	const buttons_width = button_size.x * 2 + buttons_gap
-	let current_x =
-		GUIInfo.TopBar.TimeOfDayTimeUntil.x +
-		(GUIInfo.TopBar.TimeOfDayTimeUntil.Width - buttons_width) / 2
-	rewind.x = current_x
-	current_x += button_size.x + buttons_gap
-	play_resume.x = current_x
+	const buttonsGap = 6
+	const buttonsWidth = buttonSize.x * 2 + buttonsGap
 
-	const current_y = GUIInfo.TopBar.TimeOfDayTimeUntil.y - button_size.y
-	rewind.y = play_resume.y = current_y
+	let currentX = GUIInfo.TopBar.TimeOfDayTimeUntil.x + (GUIInfo.TopBar.TimeOfDayTimeUntil.Width - buttonsWidth) / 2
+	rewind.x = currentX
+	currentX += buttonSize.x + buttonsGap
+	playResume.x = currentX
 
-	RendererSDK.FilledRect(rewind.pos1, button_size, buttons_background)
+	const currentY = GUIInfo.TopBar.TimeOfDayTimeUntil.y - buttonSize.y
+	rewind.y = playResume.y = currentY
+
+	RendererSDK.FilledRect(rewind.pos1, buttonSize, buttonsBackground)
+	RendererSDK.Image("panorama/images/hud/reborn/icon_courier_inuse_psd.vtex_c", rewind.pos1, -1, buttonSize)
+	RendererSDK.FilledRect(playResume.pos1, buttonSize, buttonsBackground)
 	RendererSDK.Image(
-		"panorama/images/hud/reborn/icon_courier_inuse_psd.vtex_c",
-		rewind.pos1,
+		isPaused ? "panorama/images/hud/dvr_play_png.vtex_c" : "panorama/images/hud/dvr_pause_png.vtex_c",
+		playResume.pos1,
 		-1,
-		button_size
-	)
-	RendererSDK.FilledRect(play_resume.pos1, button_size, buttons_background)
-	RendererSDK.Image(
-		is_paused
-			? "panorama/images/hud/dvr_play_png.vtex_c"
-			: "panorama/images/hud/dvr_pause_png.vtex_c",
-		play_resume.pos1,
-		-1,
-		button_size
+		buttonSize
 	)
 }
 
 InputEventSDK.on("MouseKeyDown", () => {
-	if (!draw.value || globalThis.INTERNAL_DEBUGGER_Step === undefined) return
-	const mouse_pos = Input.CursorOnScreen
-	if (rewind.Contains(mouse_pos)) globalThis.INTERNAL_DEBUGGER_Restart()
-	else if (play_resume.Contains(mouse_pos)) TogglePause()
+	if (!draw.value || globalThis.INTERNAL_DEBUGGER_STEP === undefined) {
+		return
+	}
+	const mousePos = Input.CursorOnScreen
+	if (rewind.Contains(mousePos)) {
+		globalThis.INTERNAL_DEBUGGER_RESTART()
+	} else if (playResume.Contains(mousePos)) {
+		TogglePause()
+	}
 })
 
 EventsSDK.on("PostDataUpdate", () => {
-	if (!is_paused) latest_data_update = hrtime()
+	if (!isPaused) {
+		latestDataUpdate = hrtime()
+	}
 })

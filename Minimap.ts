@@ -43,40 +43,22 @@ function DrawMinimapBackground(): void {
 
 	const minimap = GUIInfo.Minimap.MinimapRenderBounds,
 		material = ConVarsSDK.GetBoolean("dota_minimap_simple_background", true)
-			? MinimapSDK.CurrentMinimapOverview?.simpleMaterial ??
-			  MinimapSDK.CurrentMinimapOverview?.material ??
-			  ""
-			: MinimapSDK.CurrentMinimapOverview?.material ??
-			  MinimapSDK.CurrentMinimapOverview?.simpleMaterial ??
-			  ""
+			? MinimapSDK.CurrentMinimapOverview?.simpleMaterial ?? MinimapSDK.CurrentMinimapOverview?.material ?? ""
+			: MinimapSDK.CurrentMinimapOverview?.material ?? MinimapSDK.CurrentMinimapOverview?.simpleMaterial ?? ""
 	if (material !== "") {
 		RendererSDK.Image(material, minimap.pos1, -1, minimap.Size, Color.White, 0, minimapBlock)
 	}
 }
 
-function DrawEntityIcon(
-	ent: Entity,
-	name: string,
-	size = 600,
-	color = Color.White,
-	additionalPriority = 0
-) {
-	MinimapSDK.DrawIcon(
-		name,
-		ent.Position,
-		size,
-		color,
-		0,
-		ent,
-		0,
-		0,
-		-Number.MAX_SAFE_INTEGER + additionalPriority
-	)
+function DrawEntityIcon(ent: Entity, name: string, size = 600, color = Color.White, additionalPriority = 0) {
+	MinimapSDK.DrawIcon(name, ent.Position, size, color, 0, ent, 0, 0, -Number.MAX_SAFE_INTEGER + additionalPriority)
 }
 
 function DrawMinimapCouriers(): void {
 	EntityManager.GetEntitiesByClass(Courier).forEach(courier => {
-		if (!courier.IsAlive || !courier.IsVisible) return
+		if (!courier.IsAlive || !courier.IsVisible) {
+			return
+		}
 		DrawEntityIcon(
 			courier,
 			courier.Team === Team.Radiant
@@ -93,14 +75,18 @@ function DrawMinimapCouriers(): void {
 
 function DrawMinimapHeroIcons(): void {
 	EntityManager.GetEntitiesByClass(Hero).forEach(hero => {
-		if (!hero.IsAlive || !hero.IsVisible) return
+		if (!hero.IsAlive || !hero.IsVisible) {
+			return
+		}
 		DrawEntityIcon(hero, `heroicon_${hero.Name}`, 600, Color.White, 1)
 	})
 }
 
 function DrawMinimapRuneIcons(): void {
 	EntityManager.GetEntitiesByClass(Rune).forEach(rune => {
-		if (!rune.IsVisible) return
+		if (!rune.IsVisible) {
+			return
+		}
 		let runeName = "unknown"
 		switch (rune.Type) {
 			case DOTA_RUNES.DOTA_RUNE_ARCANE:
@@ -133,14 +119,17 @@ function DrawMinimapRuneIcons(): void {
 
 function DrawMinimapBuildingIcons(): void {
 	EntityManager.GetEntitiesByClass(Building).forEach(building => {
-		if (!building.IsAlive || !building.IsVisible) return
+		if (!building.IsAlive || !building.IsVisible) {
+			return
+		}
 		let buildingName = "miscbuilding"
-		if (building instanceof Fort) buildingName = "ancient"
-		else if (building instanceof Tower)
+		if (building instanceof Fort) {
+			buildingName = "ancient"
+		} else if (building instanceof Tower) {
 			buildingName = building.Name.includes("mid") ? "tower45" : "tower90"
-		else if (building instanceof Barrack)
+		} else if (building instanceof Barrack) {
 			buildingName = building.Name.includes("mid") ? "racks45" : "racks90"
-		else if (building instanceof Shop)
+		} else if (building instanceof Shop) {
 			switch (building.ShopType) {
 				case DOTA_SHOP_TYPE.DOTA_SHOP_SECRET:
 					buildingName = "secretshop"
@@ -154,12 +143,13 @@ function DrawMinimapBuildingIcons(): void {
 					buildingName = "shop"
 					break
 			}
-		else if (
+		} else if (
 			building instanceof HallOfFame ||
 			building instanceof Fountain ||
 			building instanceof NeutralItemStash
-		)
+		) {
 			return
+		}
 		DrawEntityIcon(
 			building,
 			buildingName,
@@ -195,9 +185,13 @@ function DrawMinimapCreepCampIcons(): void {
 
 function DrawMinimapCreepIcons(): void {
 	EntityManager.GetEntitiesByClass(Creep).forEach(creep => {
-		if (!creep.IsAlive || !creep.IsVisible) return
+		if (!creep.IsAlive || !creep.IsVisible) {
+			return
+		}
 		let creepName = "creep"
-		if (creep instanceof Siege) creepName = "siege"
+		if (creep instanceof Siege) {
+			creepName = "siege"
+		}
 		DrawEntityIcon(creep, creepName, 110, creep.IsEnemy() ? Color.Red : Color.Green)
 	})
 }
@@ -211,12 +205,26 @@ const State = EntitiesNode.AddToggle("State", true),
 	HeroIcons = EntitiesNode.AddToggle("Heroes", true),
 	BuildingIcons = EntitiesNode.AddToggle("Buildings", true)
 export function DrawMinimap(): void {
-	if (!State.value) return
+	if (!State.value) {
+		return
+	}
 	DrawMinimapBackground()
-	if (CreepCampIconsState.value) DrawMinimapCreepCampIcons()
-	if (CreepIcons.value) DrawMinimapCreepIcons()
-	if (RuneIcons.value) DrawMinimapRuneIcons()
-	if (Couriers.value) DrawMinimapCouriers()
-	if (HeroIcons.value) DrawMinimapHeroIcons()
-	if (BuildingIcons.value) DrawMinimapBuildingIcons()
+	if (CreepCampIconsState.value) {
+		DrawMinimapCreepCampIcons()
+	}
+	if (CreepIcons.value) {
+		DrawMinimapCreepIcons()
+	}
+	if (RuneIcons.value) {
+		DrawMinimapRuneIcons()
+	}
+	if (Couriers.value) {
+		DrawMinimapCouriers()
+	}
+	if (HeroIcons.value) {
+		DrawMinimapHeroIcons()
+	}
+	if (BuildingIcons.value) {
+		DrawMinimapBuildingIcons()
+	}
 }
