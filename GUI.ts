@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import {
 	Color,
 	EventsSDK,
@@ -12,8 +13,8 @@ import {
 import { RootMenu } from "./menu"
 
 declare global {
-	var INTERNAL_DEBUGGER_STEP: () => void
-	var INTERNAL_DEBUGGER_RESTART: () => void
+	var INTERNAL_DEBUGGER_Step: () => void
+	var INTERNAL_DEBUGGER_Restart: () => void
 }
 
 const rewind = new Rectangle(),
@@ -32,7 +33,7 @@ const buttonsBackground = new Color(0x16, 0x20, 0x34)
 
 let latestDataUpdate = 0
 export function DrawGUI(): void {
-	if (globalThis.INTERNAL_DEBUGGER_STEP === undefined) {
+	if (globalThis.INTERNAL_DEBUGGER_Step === undefined) {
 		return
 	}
 	if (latestDataUpdate !== 0) {
@@ -41,7 +42,7 @@ export function DrawGUI(): void {
 		const ticksPassed = Math.floor(timePassed / tickTime)
 		if (ticksPassed !== 0) {
 			for (let i = 0; i < ticksPassed; i++) {
-				globalThis.INTERNAL_DEBUGGER_STEP()
+				globalThis.INTERNAL_DEBUGGER_Step()
 			}
 			latestDataUpdate = 0
 		}
@@ -77,12 +78,12 @@ export function DrawGUI(): void {
 }
 
 InputEventSDK.on("MouseKeyDown", () => {
-	if (!draw.value || globalThis.INTERNAL_DEBUGGER_STEP === undefined) {
+	if (!draw.value || globalThis.INTERNAL_DEBUGGER_Step === undefined) {
 		return
 	}
 	const mousePos = Input.CursorOnScreen
 	if (rewind.Contains(mousePos)) {
-		globalThis.INTERNAL_DEBUGGER_RESTART()
+		globalThis.INTERNAL_DEBUGGER_Restart()
 	} else if (playResume.Contains(mousePos)) {
 		TogglePause()
 	}
