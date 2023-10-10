@@ -1,13 +1,13 @@
 import {
 	Color,
-	ComputedAttachment,
 	Entity,
 	EntityManager,
 	GameActivity,
 	Input,
 	RendererSDK,
 	Unit,
-	Vector2
+	Vector2,
+	Vector3
 } from "github.com/octarine-public/wrapper/index"
 
 import { RootMenu } from "./menu"
@@ -17,19 +17,19 @@ const State = AttachmentsNode.AddToggle("State", true),
 	GameTimeState = AttachmentsNode.AddToggle("Use game time", false),
 	Offset = AttachmentsNode.AddSlider("Frame offset", 0, -30, 30)
 
-function RenderAttachment(ent: Entity, attach: ComputedAttachment, color: Color, name: string): void {
+function RenderAttachment(ent: Entity, animationID: number, attachmentID: number, color: Color, name: string): void {
 	const time = GameTimeState.value
 		? ent.AnimationTime
 		: ent instanceof Unit
 		? ent.LastActivityAnimationPoint // ?
 		: ent.AnimationTime
 
-	const screenPos = RendererSDK.WorldToScreen(
-		attach
-			.GetPosition(time + Offset.value / attach.FPS, ent.RotationRad, ent.ModelScale)
-			.AddForThis(ent.Position)
-			.AddScalarZ(ent.DeltaZ)
-	)
+	const fps = animationID !== -1 ? ent.Animations[animationID].fps : 1
+	ent.Position.toIOBuffer()
+	IOBuffer[2] += ent.DeltaZ
+	ent.Angles.toIOBuffer(3)
+	ent.ModelData!.getAttachmentData(animationID, attachmentID, time + Offset.value / fps, ent.ModelScale)
+	const screenPos = RendererSDK.WorldToScreen(Vector3.fromIOBuffer())
 
 	if (screenPos === undefined) {
 		return
@@ -47,15 +47,16 @@ export function DrawAttachments(): void {
 		return
 	}
 	EntityManager.AllEntities.forEach(ent => {
-		if (!ent.IsVisible) {
+		if (!ent.IsVisible || ent.ModelData === undefined) {
 			return
 		}
-		ent.GetAttachments(
+		const animationID = ent.GetAnimationID(
 			ent instanceof Unit ? ent.LastActivity : GameActivity.ACT_DOTA_IDLE,
 			ent instanceof Unit ? ent.LastActivitySequenceVariant /** ?? */ : 0
-		)?.forEach((attachment, name) => {
+		) ?? -1
+		ent.Attachments.forEach((attachment, i) => {
 			let color: Color
-			switch (name) {
+			switch (attachment) {
 				case "attach_hitloc":
 					color = Color.Aqua
 					break
@@ -66,7 +67,7 @@ export function DrawAttachments(): void {
 					color = Color.White
 					break
 			}
-			RenderAttachment(ent, attachment, color, name)
+			RenderAttachment(ent, animationID, i, color, attachment)
 		})
 	})
 }
