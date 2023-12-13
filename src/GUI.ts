@@ -51,14 +51,19 @@ export function DrawGUI(): void {
 		return
 	}
 	const screenSize = RendererSDK.WindowSize
-	const buttonSize = new Vector2(GUIInfo.ScaleWidth(32, screenSize), GUIInfo.ScaleHeight(32, screenSize))
+	const buttonSize = new Vector2(
+		GUIInfo.ScaleWidth(32, screenSize),
+		GUIInfo.ScaleHeight(32, screenSize)
+	)
 	rewind.Width = playResume.Width = buttonSize.x
 	rewind.Height = playResume.Height = buttonSize.y
 
 	const buttonsGap = 6
 	const buttonsWidth = buttonSize.x * 2 + buttonsGap
 
-	let currentX = GUIInfo.TopBar.TimeOfDayTimeUntil.x + (GUIInfo.TopBar.TimeOfDayTimeUntil.Width - buttonsWidth) / 2
+	let currentX =
+		GUIInfo.TopBar.TimeOfDayTimeUntil.x +
+		(GUIInfo.TopBar.TimeOfDayTimeUntil.Width - buttonsWidth) / 2
 	rewind.x = currentX
 	currentX += buttonSize.x + buttonsGap
 	playResume.x = currentX
@@ -67,10 +72,17 @@ export function DrawGUI(): void {
 	rewind.y = playResume.y = currentY
 
 	RendererSDK.FilledRect(rewind.pos1, buttonSize, buttonsBackground)
-	RendererSDK.Image("panorama/images/hud/reborn/icon_courier_inuse_psd.vtex_c", rewind.pos1, -1, buttonSize)
+	RendererSDK.Image(
+		"panorama/images/hud/reborn/icon_courier_inuse_psd.vtex_c",
+		rewind.pos1,
+		-1,
+		buttonSize
+	)
 	RendererSDK.FilledRect(playResume.pos1, buttonSize, buttonsBackground)
 	RendererSDK.Image(
-		isPaused ? "panorama/images/hud/dvr_play_png.vtex_c" : "panorama/images/hud/dvr_pause_png.vtex_c",
+		isPaused
+			? "panorama/images/hud/dvr_play_png.vtex_c"
+			: "panorama/images/hud/dvr_pause_png.vtex_c",
 		playResume.pos1,
 		-1,
 		buttonSize

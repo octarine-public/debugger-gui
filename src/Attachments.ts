@@ -17,7 +17,13 @@ const State = AttachmentsNode.AddToggle("State", true),
 	GameTimeState = AttachmentsNode.AddToggle("Use game time", false),
 	Offset = AttachmentsNode.AddSlider("Frame offset", 0, -30, 30)
 
-function RenderAttachment(ent: Entity, animationID: number, attachmentID: number, color: Color, name: string): void {
+function RenderAttachment(
+	ent: Entity,
+	animationID: number,
+	attachmentID: number,
+	color: Color,
+	name: string
+): void {
 	const time = GameTimeState.value
 		? ent.AnimationTime
 		: ent instanceof Unit
@@ -28,7 +34,12 @@ function RenderAttachment(ent: Entity, animationID: number, attachmentID: number
 	ent.Position.toIOBuffer()
 	IOBuffer[2] += ent.DeltaZ
 	ent.Angles.toIOBuffer(3)
-	ent.ModelData!.getAttachmentData(animationID, attachmentID, time + Offset.value / fps, ent.ModelScale)
+	ent.ModelData!.getAttachmentData(
+		animationID,
+		attachmentID,
+		time + Offset.value / fps,
+		ent.ModelScale
+	)
 	const screenPos = RendererSDK.WorldToScreen(Vector3.fromIOBuffer())
 
 	if (screenPos === undefined) {
@@ -50,10 +61,11 @@ export function DrawAttachments(): void {
 		if (!ent.IsVisible || ent.ModelData === undefined) {
 			return
 		}
-		const animationID = ent.GetAnimationID(
-			ent instanceof Unit ? ent.LastActivity : GameActivity.ACT_DOTA_IDLE,
-			ent instanceof Unit ? ent.LastActivitySequenceVariant /** ?? */ : 0
-		) ?? -1
+		const animationID =
+			ent.GetAnimationID(
+				ent instanceof Unit ? ent.LastActivity : GameActivity.ACT_DOTA_IDLE,
+				ent instanceof Unit ? ent.LastActivitySequenceVariant /** ?? */ : 0
+			) ?? -1
 		ent.Attachments.forEach((attachment, i) => {
 			let color: Color
 			switch (attachment) {

@@ -1,4 +1,9 @@
-import { Color, GUIInfo, RendererSDK, Vector2 } from "github.com/octarine-public/wrapper/index"
+import {
+	Color,
+	GUIInfo,
+	RendererSDK,
+	Vector2
+} from "github.com/octarine-public/wrapper/index"
 
 import { RootMenu } from "./menu"
 

@@ -36,14 +36,22 @@ function DrawTopPanelRespawnTimer(rect: Rectangle, remaining: number): void {
 	const textSize = RendererSDK.GetTextSize(text)
 	RendererSDK.Text(
 		text,
-		new Vector2(rect.pos1.x + (rect.Width - textSize.x) / 2, rect.pos1.y + (rect.Height - textSize.y) / 2)
+		new Vector2(
+			rect.pos1.x + (rect.Width - textSize.x) / 2,
+			rect.pos1.y + (rect.Height - textSize.y) / 2
+		)
 	)
 }
 
 function DrawTeamsBackground(): void {
 	const radiantRect = GUIInfo.TopBar.RadiantTeamBackground,
 		direRect = GUIInfo.TopBar.DireTeamBackground
-	RendererSDK.Image("panorama/images/hud/reborn/top_bar_team_bg_psd.vtex_c", radiantRect.pos1, -1, radiantRect.Size)
+	RendererSDK.Image(
+		"panorama/images/hud/reborn/top_bar_team_bg_psd.vtex_c",
+		radiantRect.pos1,
+		-1,
+		radiantRect.Size
+	)
 	RendererSDK.Image(
 		"panorama/images/hud/reborn/top_bar_team_bg_psd.vtex_c",
 		direRect.Size.AddForThis(direRect.pos1),
@@ -60,7 +68,10 @@ function DrawTeamScore(rect: Rectangle, score: number): void {
 	const textSize = RendererSDK.GetTextSize(text, "Calibri", size)
 	RendererSDK.Text(
 		text,
-		new Vector2(rect.pos1.x + (rect.Width - textSize.x) / 2, rect.pos1.y + rect.Height / 2 - textSize.y),
+		new Vector2(
+			rect.pos1.x + (rect.Width - textSize.x) / 2,
+			rect.pos1.y + rect.Height / 2 - textSize.y
+		),
 		Color.White,
 		"Calibri",
 		size
@@ -87,7 +98,12 @@ function DrawTeamsScore(): void {
 
 function DrawTimeOfDay(): void {
 	const clock = GUIInfo.TopBar.TimeOfDay
-	RendererSDK.Image("panorama/images/hud/reborn/bg_timer_psd.vtex_c", clock.pos1, -1, clock.Size)
+	RendererSDK.Image(
+		"panorama/images/hud/reborn/bg_timer_psd.vtex_c",
+		clock.pos1,
+		-1,
+		clock.Size
+	)
 	let time = GameRules?.GameTime ?? 0
 	if (time < 0) {
 		time = Math.abs(time + 1)
@@ -100,7 +116,10 @@ function DrawTimeOfDay(): void {
 	const textSize = RendererSDK.GetTextSize(text)
 	RendererSDK.Text(
 		text,
-		new Vector2(clock.pos1.x + (clock.Width - textSize.x) / 2, clock.pos1.y + (clock.Height - textSize.y) / 2)
+		new Vector2(
+			clock.pos1.x + (clock.Width - textSize.x) / 2,
+			clock.pos1.y + (clock.Height - textSize.y) / 2
+		)
 	)
 }
 

@@ -1,4 +1,8 @@
-import { DOTAGameUIState, EventsSDK, GameState } from "github.com/octarine-public/wrapper/index"
+import {
+	DOTAGameUIState,
+	EventsSDK,
+	GameState
+} from "github.com/octarine-public/wrapper/index"
 
 import { DrawAttachments } from "./Attachments"
 import { DrawCursor } from "./Cursor"

@@ -100,7 +100,11 @@ function RenderEntity(ent: Entity, size: Vector2, path: string): void {
 		return
 	}
 	screenPos.SubtractForThis(size.DivideScalar(2))
-	RendererSDK.FilledCircle(screenPos.SubtractScalar(2), size.AddScalar(4), GetEntityTeamColor(ent))
+	RendererSDK.FilledCircle(
+		screenPos.SubtractScalar(2),
+		size.AddScalar(4),
+		GetEntityTeamColor(ent)
+	)
 	RendererSDK.Image(path, screenPos, 0, size)
 }
 
@@ -171,7 +175,11 @@ function DrawRunes(size: Vector2): void {
 			default:
 				continue
 		}
-		RenderEntity(rune, size, `github.com/octarine-private/immortal-core/scripts_files/images/runes/${runeName}.png`)
+		RenderEntity(
+			rune,
+			size,
+			`github.com/octarine-private/immortal-core/scripts_files/images/runes/${runeName}.png`
+		)
 	}
 }
 
@@ -224,14 +232,25 @@ function DrawHitboxes(): void {
 		}
 		if (ent instanceof Tree && (!TreesState.value || !ent.IsAlive)) {
 			return
-		} else if (ent instanceof Creep && (!CreepsState.value || !ent.IsAlive || !ent.IsSpawned)) {
+		} else if (
+			ent instanceof Creep &&
+			(!CreepsState.value || !ent.IsAlive || !ent.IsSpawned)
+		) {
 			return
 		} else if (ent instanceof Rune && !RunesState.value) {
 			return
 		} else if (ent instanceof Hero && (!HeroesState.value || !ent.IsAlive)) {
 			return
 		}
-		ent.BoundingBox.Polygon.Draw("", LocalPlayer!.Hero!, particles, GetEntityTeamColor(ent), 40, 40, false)
+		ent.BoundingBox.Polygon.Draw(
+			"",
+			LocalPlayer!.Hero!,
+			particles,
+			GetEntityTeamColor(ent),
+			40,
+			40,
+			false
+		)
 	})
 }
 

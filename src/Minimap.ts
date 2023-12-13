@@ -43,15 +43,43 @@ function DrawMinimapBackground(): void {
 
 	const minimap = GUIInfo.Minimap.MinimapRenderBounds,
 		material = ConVarsSDK.GetBoolean("dota_minimap_simple_background", true)
-			? MinimapSDK.CurrentMinimapOverview?.simpleMaterial ?? MinimapSDK.CurrentMinimapOverview?.material ?? ""
-			: MinimapSDK.CurrentMinimapOverview?.material ?? MinimapSDK.CurrentMinimapOverview?.simpleMaterial ?? ""
+			? MinimapSDK.CurrentMinimapOverview?.simpleMaterial ??
+			  MinimapSDK.CurrentMinimapOverview?.material ??
+			  ""
+			: MinimapSDK.CurrentMinimapOverview?.material ??
+			  MinimapSDK.CurrentMinimapOverview?.simpleMaterial ??
+			  ""
 	if (material !== "") {
-		RendererSDK.Image(material, minimap.pos1, -1, minimap.Size, Color.White, 0, minimapBlock)
+		RendererSDK.Image(
+			material,
+			minimap.pos1,
+			-1,
+			minimap.Size,
+			Color.White,
+			0,
+			minimapBlock
+		)
 	}
 }
 
-function DrawEntityIcon(ent: Entity, name: string, size = 600, color = Color.White, additionalPriority = 0) {
-	MinimapSDK.DrawIcon(name, ent.Position, size, color, 0, ent, 0, 0, -Number.MAX_SAFE_INTEGER + additionalPriority)
+function DrawEntityIcon(
+	ent: Entity,
+	name: string,
+	size = 600,
+	color = Color.White,
+	additionalPriority = 0
+) {
+	MinimapSDK.DrawIcon(
+		name,
+		ent.Position,
+		size,
+		color,
+		0,
+		ent,
+		0,
+		0,
+		-Number.MAX_SAFE_INTEGER + additionalPriority
+	)
 }
 
 function DrawMinimapCouriers(): void {
@@ -154,7 +182,11 @@ function DrawMinimapBuildingIcons(): void {
 			building,
 			buildingName,
 			120,
-			building.IsNeutral ? Color.White : building.IsEnemy() ? Color.Red : Color.Green
+			building.IsNeutral
+				? Color.White
+				: building.IsEnemy()
+				? Color.Red
+				: Color.Green
 		)
 	})
 }
