@@ -15,7 +15,8 @@ import { RootMenu } from "./menu"
 const AttachmentsNode = RootMenu.AddNode("Attachments")
 const State = AttachmentsNode.AddToggle("State", true),
 	GameTimeState = AttachmentsNode.AddToggle("Use game time", false),
-	Offset = AttachmentsNode.AddSlider("Frame offset", 0, -30, 30)
+	Offset = AttachmentsNode.AddSlider("Frame offset", 0, -30, 30),
+	useNetworkActivity = AttachmentsNode.AddToggle("Use network activity", false)
 
 function RenderAttachment(
 	ent: Entity,
@@ -27,8 +28,8 @@ function RenderAttachment(
 	const time = GameTimeState.value
 		? ent.AnimationTime
 		: ent instanceof Unit
-		? ent.LastActivityAnimationPoint // ?
-		: ent.AnimationTime
+			? ent.LastActivityAnimationPoint // ?
+			: ent.AnimationTime
 
 	const fps = animationID !== -1 ? ent.Animations[animationID].fps : 1
 	ent.Position.toIOBuffer()
@@ -63,8 +64,16 @@ export function DrawAttachments(): void {
 		}
 		const animationID =
 			ent.GetAnimationID(
-				ent instanceof Unit ? ent.LastActivity : GameActivity.ACT_DOTA_IDLE,
-				ent instanceof Unit ? ent.LastActivitySequenceVariant /** ?? */ : 0
+				ent instanceof Unit
+					? useNetworkActivity.value
+						? ent.NetworkActivity
+						: ent.LastActivity
+					: GameActivity.ACT_DOTA_IDLE,
+				ent instanceof Unit
+					? useNetworkActivity.value
+						? ent.NetworkSequenceIndex
+						: ent.LastActivitySequenceVariant /** ?? */
+					: 0
 			) ?? -1
 		ent.Attachments.forEach((attachment, i) => {
 			let color: Color
