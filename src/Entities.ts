@@ -9,8 +9,10 @@ import {
 	EventsSDK,
 	GUIInfo,
 	Hero,
+	Input,
 	LocalPlayer,
 	ParticlesSDK,
+	Rectangle,
 	RendererSDK,
 	Rune,
 	Tree,
@@ -106,6 +108,28 @@ function RenderEntity(ent: Entity, size: Vector2, path: string): void {
 		GetEntityTeamColor(ent)
 	)
 	RendererSDK.Image(path, screenPos, 0, size)
+	const position = new Rectangle(screenPos, screenPos.Add(size))
+
+	const isUnder = Input.CursorOnScreen.IsUnderRectangle(
+		position.pos1.x,
+		position.pos1.y,
+		position.Width,
+		position.Height
+	)
+
+	if (!isUnder) {
+		return
+	}
+
+	const text = `
+		IsAlive: ${ent.IsAlive}
+		IsVisible: ${ent.IsVisible}
+		Index: ${ent.Index}
+		Handle: ${ent.Handle}
+		Name: ${ent.Name}
+		ClassName: ${ent.ClassName}
+	`
+	RendererSDK.TextByFlags(text, position, Color.White, 4)
 }
 
 const Trees = EntityManager.GetEntitiesByClass(Tree)
