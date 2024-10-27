@@ -3,12 +3,12 @@ import {
 	ArrayExtensions,
 	Color,
 	Creep,
-	DOTA_RUNES,
 	Entity,
 	EntityManager,
 	EventsSDK,
 	GUIInfo,
 	Hero,
+	ImageData,
 	Input,
 	LocalPlayer,
 	ParticlesSDK,
@@ -170,40 +170,9 @@ function DrawHeroes(size: Vector2): void {
 const Runes = EntityManager.GetEntitiesByClass(Rune)
 function DrawRunes(size: Vector2): void {
 	for (const rune of Runes) {
-		if (!rune.IsVisible) {
-			continue
+		if (rune.IsVisible) {
+			RenderEntity(rune, size, ImageData.GetRuneTexture(rune.Name))
 		}
-		let runeName: string
-		switch (rune.Type) {
-			case DOTA_RUNES.DOTA_RUNE_DOUBLEDAMAGE:
-				runeName = "doubledamage"
-				break
-			case DOTA_RUNES.DOTA_RUNE_HASTE:
-				runeName = "haste"
-				break
-			case DOTA_RUNES.DOTA_RUNE_ILLUSION:
-				runeName = "illusion"
-				break
-			case DOTA_RUNES.DOTA_RUNE_INVISIBILITY:
-				runeName = "invis"
-				break
-			case DOTA_RUNES.DOTA_RUNE_REGENERATION:
-				runeName = "regen"
-				break
-			case DOTA_RUNES.DOTA_RUNE_ARCANE:
-				runeName = "arcane"
-				break
-			case DOTA_RUNES.DOTA_RUNE_BOUNTY:
-				runeName = "bounty"
-				break
-			default:
-				continue
-		}
-		RenderEntity(
-			rune,
-			size,
-			`github.com/octarine-private/immortal-core/scripts_files/images/runes/${runeName}.png`
-		)
 	}
 }
 

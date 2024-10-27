@@ -21,9 +21,9 @@
 		"../../../**/*.d.ts"
 	],
 	"exclude": [
-		"../../octarine-web/*",
 		"node_modules/**/*",
-		"scripts_files/**/*"
+		"scripts_files/**/*",
+		"../deadlock-sdk/**/*",
 	],
 	"compileOnSave": true
 }

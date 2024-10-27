@@ -28,7 +28,7 @@ function RenderAttachment(
 	const time = GameTimeState.value
 		? ent.AnimationTime
 		: ent instanceof Unit
-			? ent.LastActivityAnimationPoint // ?
+			? ent.LastAnimationCastPoint // ?
 			: ent.AnimationTime
 
 	const fps = animationID !== -1 ? ent.Animations[animationID].fps : 1
