@@ -121,9 +121,19 @@ function RenderEntity(ent: Entity, size: Vector2, path: string): void {
 		return
 	}
 
+	let isWaitingToSpawn = false,
+		predictedIsWaitingToSpawn = false
+
+	if (ent instanceof Unit) {
+		isWaitingToSpawn = ent.IsWaitingToSpawn
+		predictedIsWaitingToSpawn = ent.PredictedIsWaitingToSpawn
+	}
+
 	const text = `
 		IsAlive: ${ent.IsAlive}
 		IsVisible: ${ent.IsVisible}
+		IsWaitingToSpawn: ${isWaitingToSpawn}
+		IsWaitingToSpawnPredicted: ${predictedIsWaitingToSpawn}
 		Index: ${ent.Index}
 		Handle: ${ent.Handle}
 		Name: ${ent.Name}
