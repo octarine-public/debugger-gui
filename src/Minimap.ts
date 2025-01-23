@@ -43,12 +43,12 @@ function DrawMinimapBackground(): void {
 
 	const minimap = GUIInfo.Minimap.MinimapRenderBounds,
 		material = ConVarsSDK.GetBoolean("dota_minimap_simple_background", true)
-			? MinimapSDK.CurrentMinimapOverview?.simpleMaterial ??
-			  MinimapSDK.CurrentMinimapOverview?.material ??
-			  ""
-			: MinimapSDK.CurrentMinimapOverview?.material ??
-			  MinimapSDK.CurrentMinimapOverview?.simpleMaterial ??
-			  ""
+			? (MinimapSDK.CurrentMinimapOverview?.simpleMaterial ??
+				MinimapSDK.CurrentMinimapOverview?.material ??
+				"")
+			: (MinimapSDK.CurrentMinimapOverview?.material ??
+				MinimapSDK.CurrentMinimapOverview?.simpleMaterial ??
+				"")
 	if (material !== "") {
 		RendererSDK.Image(
 			material,
@@ -94,8 +94,8 @@ function DrawMinimapCouriers(): void {
 					? "courier_flying"
 					: "courier"
 				: courier.IsFlying
-				? "courier_dire_flying"
-				: "courier_dire",
+					? "courier_dire_flying"
+					: "courier_dire",
 			200
 		)
 	})
@@ -185,8 +185,8 @@ function DrawMinimapBuildingIcons(): void {
 			building.IsNeutral
 				? Color.White
 				: building.IsEnemy()
-				? Color.Red
-				: Color.Green
+					? Color.Red
+					: Color.Green
 		)
 	})
 }
