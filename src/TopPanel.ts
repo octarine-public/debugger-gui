@@ -1,16 +1,3 @@
-import {
-	Color,
-	EntityManager,
-	GameRules,
-	GUIInfo,
-	Player,
-	PlayerResource,
-	Rectangle,
-	RendererSDK,
-	Team,
-	UnitData,
-	Vector2
-} from "github.com/octarine-public/wrapper/index"
 
 import { RootMenu } from "./menu"
 
@@ -82,7 +69,7 @@ function DrawTeamsScore(): void {
 	let radiantScore = 0,
 		direScore = 0
 	EntityManager.GetEntitiesByClass(Player).forEach(player => {
-		const data = PlayerResource?.PlayerTeamData[player.PlayerID]
+		const data = Dota2SDK.PlayerResource?.PlayerTeamData[player.PlayerID]
 		if (data === undefined) {
 			return
 		}
@@ -104,7 +91,7 @@ function DrawTimeOfDay(): void {
 		-1,
 		clock.Size
 	)
-	let time = GameRules?.GameTime ?? 0
+	let time = Dota2SDK.GameRules?.GameTime ?? 0
 	if (time < 0) {
 		time = Math.abs(time + 1)
 	}
@@ -136,7 +123,7 @@ export function DrawTopPanel(): void {
 		if (player.Team !== Team.Radiant && player.Team !== Team.Dire) {
 			continue
 		}
-		const data = PlayerResource?.PlayerTeamData[player.PlayerID]
+		const data = Dota2SDK.PlayerResource?.PlayerTeamData[player.PlayerID]
 		if (data === undefined) {
 			continue
 		}

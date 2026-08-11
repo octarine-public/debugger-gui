@@ -1,14 +1,4 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import {
-	Color,
-	EventsSDK,
-	GUIInfo,
-	Input,
-	InputEventSDK,
-	Rectangle,
-	RendererSDK,
-	Vector2
-} from "github.com/octarine-public/wrapper/index"
 
 import { RootMenu } from "./menu"
 
@@ -93,7 +83,7 @@ InputEventSDK.on("MouseKeyDown", () => {
 	if (!draw.value || globalThis.INTERNAL_DEBUGGER_Step === undefined) {
 		return
 	}
-	const mousePos = Input.CursorOnScreen
+	const mousePos = InputManager.CursorOnScreen
 	if (rewind.Contains(mousePos)) {
 		globalThis.INTERNAL_DEBUGGER_Restart()
 	} else if (playResume.Contains(mousePos)) {

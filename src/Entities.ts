@@ -1,24 +1,3 @@
-import {
-	Ability,
-	ArrayExtensions,
-	Color,
-	Creep,
-	Entity,
-	EntityManager,
-	EventsSDK,
-	GUIInfo,
-	Hero,
-	ImageData,
-	Input,
-	LocalPlayer,
-	ParticlesSDK,
-	Rectangle,
-	RendererSDK,
-	Rune,
-	Tree,
-	Unit,
-	Vector2
-} from "github.com/octarine-public/wrapper/index"
 
 import { RootMenu } from "./menu"
 
@@ -110,7 +89,7 @@ function RenderEntity(ent: Entity, size: Vector2, path: string): void {
 	RendererSDK.Image(path, screenPos, 0, size)
 	const position = new Rectangle(screenPos, screenPos.Add(size))
 
-	const isUnder = Input.CursorOnScreen.IsUnderRectangle(
+	const isUnder = InputManager.CursorOnScreen.IsUnderRectangle(
 		position.pos1.x,
 		position.pos1.y,
 		position.Width,
@@ -216,7 +195,7 @@ EventsSDK.on("EntityCreated", ent => {
 	}
 	otherEnts.push(ent)
 })
-EventsSDK.on("EntityDestroyed", ent => ArrayExtensions.arrayRemove(otherEnts, ent))
+EventsSDK.on("EntityDestroyed", ent => otherEnts.remove(ent))
 
 const EntitiesNode = RootMenu.AddNode("Entities")
 const TreesState = EntitiesNode.AddToggle("Trees", true),
@@ -247,7 +226,7 @@ function DrawHitboxes(): void {
 		}
 		ent.BoundingBox.Polygon.Draw(
 			"",
-			LocalPlayer!.Hero!,
+			Dota2SDK.LocalPlayer!.Hero!,
 			particles,
 			GetEntityTeamColor(ent),
 			40,

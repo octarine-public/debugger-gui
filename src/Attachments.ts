@@ -1,14 +1,3 @@
-import {
-	Color,
-	Entity,
-	EntityManager,
-	GameActivity,
-	Input,
-	RendererSDK,
-	Unit,
-	Vector2,
-	Vector3
-} from "github.com/octarine-public/wrapper/index"
 
 import { RootMenu } from "./menu"
 
@@ -47,7 +36,7 @@ function RenderAttachment(
 		return
 	}
 
-	if (Input.CursorOnScreen.Distance(screenPos) < 16) {
+	if (InputManager.CursorOnScreen.Distance(screenPos) < 16) {
 		RendererSDK.Text(name, screenPos, color)
 	}
 

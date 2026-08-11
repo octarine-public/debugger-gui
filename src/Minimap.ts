@@ -1,31 +1,3 @@
-import {
-	Barrack,
-	Building,
-	Color,
-	ConVarsSDK,
-	Courier,
-	Creep,
-	DOTA_RUNES,
-	DOTA_SHOP_TYPE,
-	Entity,
-	EntityManager,
-	Fort,
-	Fountain,
-	GUIInfo,
-	HallOfFame,
-	Hero,
-	MinimapSDK,
-	NeutralItemStash,
-	NeutralSpawner,
-	NeutralSpawnerType,
-	RendererSDK,
-	RoshanSpawner,
-	Rune,
-	Shop,
-	Siege,
-	Team,
-	Tower
-} from "github.com/octarine-public/wrapper/index"
 
 import { RootMenu } from "./menu"
 

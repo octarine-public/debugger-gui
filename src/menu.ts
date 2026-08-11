@@ -1,4 +1,3 @@
-import { EventsSDK, Menu } from "github.com/octarine-public/wrapper/index"
 
 declare global {
 	// eslint-disable-next-line @typescript-eslint/naming-convention
@@ -11,8 +10,7 @@ export const RootMenu = Menu.AddEntry(
 )
 RootMenu.AddKeybind("Emit fake Tick").OnRelease(() => {
 	EventsSDK.emit("PreDataUpdate", false)
-	EventsSDK.emit("MidDataUpdate", false)
-	EventsSDK.emit("PostDataUpdate", false)
+	EventsSDK.emit("PostDataUpdate", false, 0)
 	EventsSDK.emit("Tick", false, 0)
 })
 
