@@ -11,12 +11,7 @@
 		"lib": [
 			"ESNext"
 		],
-		"forceConsistentCasingInFileNames": true,
-		"paths": {
-			"github.com/*": [
-				"../../*"
-			]
-		}
+		"forceConsistentCasingInFileNames": true
 	},
 	"include": [
 		"./**/*.ts",
