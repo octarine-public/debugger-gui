@@ -14,6 +14,9 @@ EventsSDK.on("PreDraw", () => {
 	DrawAttachments()
 	DrawEntities()
 	DrawMinimap()
+})
+
+EventsSDK.on("Draw", () => {
 	DrawTopPanel()
 	DrawCursor()
 	DrawFPS()
