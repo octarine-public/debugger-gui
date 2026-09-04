@@ -21,6 +21,7 @@ let clockBox: Nullable<HTMLElement>
 let clockLabel: Nullable<HTMLElement>
 const heroImages = new Array<Nullable<HTMLElement>>(SLOTS * 2)
 const heroIDs = new Array<number>(SLOTS * 2).fill(-1)
+const heroTextures = new Array<string>(SLOTS * 2).fill("")
 const respawnBoxes = new Array<Nullable<HTMLElement>>(SLOTS * 2)
 const respawnLabels = new Array<Nullable<HTMLElement>>(SLOTS * 2)
 const slotUsed = new Array<boolean>(SLOTS * 2).fill(false)
@@ -63,6 +64,7 @@ function AttachHeroAt(index: number): React.RefCallback<HTMLElement> {
 	return element => {
 		heroImages[index] = element ?? undefined
 		heroIDs[index] = -1
+		heroTextures[index] = ""
 	}
 }
 
@@ -230,16 +232,20 @@ function WritePlayers(): void {
 		const icon = heroImages[index]
 		if (heroName !== "" && icon !== undefined) {
 			slotUsed[index] = true
-			WriteRect(
-				icon,
-				isRadiant
-					? GUIInfo.TopBar.RadiantPlayersHeroImages[slot]
-					: GUIInfo.TopBar.DirePlayersHeroImages[slot]
-			)
+			const box = isRadiant
+				? GUIInfo.TopBar.RadiantPlayersHeroImages[slot]
+				: GUIInfo.TopBar.DirePlayersHeroImages[slot]
+			WriteRect(icon, box)
 			if (heroIDs[index] !== data.SelectedHeroID) {
 				heroIDs[index] = data.SelectedHeroID
-				icon.setAttribute("src", ImageData.GetHeroTexture(heroName))
+				heroTextures[index] = ImageData.GetHeroTexture(heroName)
 			}
+			MenuSDK.WriteSizedArt(
+				icon,
+				heroTextures[index],
+				Math.round(box.Width),
+				Math.round(box.Height)
+			)
 			MenuSDK.WriteStyle(icon, "filter", isDead ? "grayscale(1)" : "none")
 		}
 		const timerBox = respawnBoxes[index],
