@@ -73,19 +73,16 @@ function Render(): React.ReactNode {
 		React.createElement("img", {
 			ref: (element: Nullable<HTMLElement | null>) =>
 				(radiantBackground = element ?? undefined),
-			src: TEAM_BG,
 			style: imageStyle
 		}),
 		React.createElement("img", {
 			ref: (element: Nullable<HTMLElement | null>) =>
 				(direBackground = element ?? undefined),
-			src: TEAM_BG,
 			style: { ...imageStyle, transform: "rotate(180deg)" }
 		}),
 		React.createElement("img", {
 			ref: (element: Nullable<HTMLElement | null>) =>
 				(clockBackground = element ?? undefined),
-			src: CLOCK_BG,
 			style: imageStyle
 		}),
 		Label(
@@ -132,15 +129,22 @@ function WriteRect(element: HTMLElement, rect: Rectangle): void {
 	MenuSDK.WritePx(element, "height", rect.Height)
 }
 
+function WriteBackground(
+	element: Nullable<HTMLElement>,
+	rect: Rectangle,
+	path: string
+): void {
+	if (element === undefined) {
+		return
+	}
+	WriteRect(element, rect)
+	MenuSDK.WriteSizedArt(element, path, Math.round(rect.Width), Math.round(rect.Height))
+	MenuSDK.WriteShown(element, true)
+}
+
 function WriteBackgrounds(): void {
-	if (radiantBackground !== undefined) {
-		WriteRect(radiantBackground, GUIInfo.TopBar.RadiantTeamBackground)
-		MenuSDK.WriteShown(radiantBackground, true)
-	}
-	if (direBackground !== undefined) {
-		WriteRect(direBackground, GUIInfo.TopBar.DireTeamBackground)
-		MenuSDK.WriteShown(direBackground, true)
-	}
+	WriteBackground(radiantBackground, GUIInfo.TopBar.RadiantTeamBackground, TEAM_BG)
+	WriteBackground(direBackground, GUIInfo.TopBar.DireTeamBackground, TEAM_BG)
 }
 
 function WriteScore(
@@ -193,8 +197,7 @@ function WriteClock(): void {
 		return
 	}
 	const clock = GUIInfo.TopBar.TimeOfDay
-	WriteRect(clockBackground, clock)
-	MenuSDK.WriteShown(clockBackground, true)
+	WriteBackground(clockBackground, clock, CLOCK_BG)
 	let time = Dota2SDK.GameRules?.GameTime ?? 0
 	if (time < 0) {
 		time = Math.abs(time + 1)
