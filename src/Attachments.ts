@@ -1,4 +1,4 @@
-
+import { canvas } from "../render"
 import { RootMenu } from "./menu"
 
 const AttachmentsNode = RootMenu.AddNode("Attachments")
@@ -17,7 +17,7 @@ function RenderAttachment(
 	const time = GameTimeState.value
 		? ent.AnimationTime
 		: ent instanceof Unit
-			? ent.LastAnimationCastPoint // ?
+			? ent.LastAnimationCastPoint
 			: ent.AnimationTime
 
 	const fps = animationID !== -1 ? ent.Animations[animationID].fps : 1
@@ -37,10 +37,10 @@ function RenderAttachment(
 	}
 
 	if (InputManager.CursorOnScreen.Distance(screenPos) < 16) {
-		RendererSDK.Text(name, screenPos, color)
+		canvas.Text(name, screenPos, { color, size: 18 + 4 })
 	}
 
-	RendererSDK.FilledRect(screenPos.SubtractScalar(4), new Vector2(8, 8), color)
+	canvas.Rect(screenPos.SubtractScalar(4), new Vector2(8, 8), { color })
 }
 
 export function DrawAttachments(): void {

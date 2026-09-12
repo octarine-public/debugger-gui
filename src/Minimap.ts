@@ -1,16 +1,13 @@
-
+import { canvas } from "../render"
 import { RootMenu } from "./menu"
 
 function DrawMinimapBackground(): void {
 	const minimapBlock = GUIInfo.Minimap.Minimap
-	RendererSDK.Image(
+	canvas.Image(
 		"panorama/images/hud/reborn/bg_minimap_psd.vtex_c",
 		minimapBlock.pos1,
-		-1,
 		minimapBlock.Size,
-		Color.White,
-		0,
-		minimapBlock
+		{ color: Color.White, angle: 0, clip: minimapBlock }
 	)
 
 	const minimap = GUIInfo.Minimap.MinimapRenderBounds,
@@ -22,15 +19,11 @@ function DrawMinimapBackground(): void {
 				MinimapSDK.CurrentMinimapOverview?.simpleMaterial ??
 				"")
 	if (material !== "") {
-		RendererSDK.Image(
-			material,
-			minimap.pos1,
-			-1,
-			minimap.Size,
-			Color.White,
-			0,
-			minimapBlock
-		)
+		canvas.Image(material, minimap.pos1, minimap.Size, {
+			color: Color.White,
+			angle: 0,
+			clip: minimapBlock
+		})
 	}
 }
 

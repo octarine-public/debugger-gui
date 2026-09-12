@@ -1,4 +1,4 @@
-
+import { canvas } from "../render"
 import { RootMenu } from "./menu"
 
 function UnitPath(name: string): string {
@@ -81,12 +81,10 @@ function RenderEntity(ent: Entity, size: Vector2, path: string): void {
 		return
 	}
 	screenPos.SubtractForThis(size.DivideScalar(2))
-	RendererSDK.FilledCircle(
-		screenPos.SubtractScalar(2),
-		size.AddScalar(4),
-		GetEntityTeamColor(ent)
-	)
-	RendererSDK.Image(path, screenPos, 0, size)
+	canvas.Circle(screenPos.SubtractScalar(2), size.AddScalar(4), {
+		color: GetEntityTeamColor(ent)
+	})
+	canvas.Image(path, screenPos, size, { circle: true })
 	const position = new Rectangle(screenPos, screenPos.Add(size))
 
 	const isUnder = InputManager.CursorOnScreen.IsUnderRectangle(
@@ -118,7 +116,10 @@ function RenderEntity(ent: Entity, size: Vector2, path: string): void {
 		Name: ${ent.Name}
 		ClassName: ${ent.ClassName}
 	`
-	RendererSDK.TextByFlags(text, position, Color.White, 4)
+	canvas.TextIn(text, position, {
+		color: Color.White,
+		size: position.Height / 4 + 4
+	})
 }
 
 const Trees = EntityManager.GetEntitiesByClass(Tree)
@@ -133,14 +134,14 @@ function DrawTrees(size: Vector2): void {
 			continue
 		}
 		screenPos.SubtractForThis(treeSize.DivideScalar(2))
-		RendererSDK.FilledCircle(screenPos, treeSize, Color.Yellow)
+		canvas.Circle(screenPos, treeSize, { color: Color.Yellow })
 	}
 }
 
 const Creeps = EntityManager.GetEntitiesByClass(Creep)
 function DrawCreeps(size: Vector2): void {
 	for (const creep of Creeps) {
-		if (/*!creep.IsVisible || */ !creep.IsAlive /* || !creep.IsSpawned*/) {
+		if (!creep.IsAlive) {
 			continue
 		}
 		RenderEntity(creep, size, UnitPath(creep.Name))
@@ -179,7 +180,7 @@ function DrawOther(): void {
 		if (text.length === 0) {
 			text = ent.ClassName
 		}
-		RendererSDK.Text(text, screenPos, GetEntityTeamColor(ent))
+		canvas.Text(text, screenPos, { color: GetEntityTeamColor(ent), size: 18 + 4 })
 	}
 }
 
