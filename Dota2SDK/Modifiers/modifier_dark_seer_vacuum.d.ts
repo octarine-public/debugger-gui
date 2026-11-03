@@ -1,0 +1,10 @@
+// AUTO-GENERATED - do not edit.
+declare class modifier_dark_seer_vacuum extends Modifier implements IDebuff, IDisable {
+	public readonly IsHidden = false
+	public readonly DebuffModifierName: string
+	public IsDebuff(): this is IDebuff
+	public IsDisable(): this is IDisable
+	/** The vacuum strikes the unit as it lets go: its ability's (`Ability.DamageOverTime`). */
+	protected readonly DeclaredEvents: EModifierfunction[]
+	public get IsStunDebuff(): boolean
+}

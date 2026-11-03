@@ -30,5 +30,10 @@
 		"type": "git",
 		"directory": "/",
 		"url": "https://github.com/octarine-public/debugger-gui"
-	}
+	},
+	"dependencies": {},
+	"octarineBundle": true,
+	"octarineMinimize": false,
+	"octarineObfuscate": false,
+	"octarineTreeShaking": true
 }
