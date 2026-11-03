@@ -1,162 +1,118 @@
-import {
-	Color,
-	EntityManager,
-	GameRules,
-	GUIInfo,
-	Player,
-	PlayerResource,
-	Rectangle,
-	RendererSDK,
-	Team,
-	UnitData,
-	Vector2
-} from "github.com/octarine-public/wrapper/index"
-
+import { canvas, TextCentered } from "./canvas"
+import { HudScale, TopBar } from "./layout"
 import { RootMenu } from "./menu"
 
-function DrawTopPanelHeroIcon(rect: Rectangle, heroName: string, isDead: boolean): void {
-	if (heroName === "") {
+const PANEL_COLOR = new Color(12, 14, 18, 220),
+	RADIANT_COLOR = new Color(70, 160, 70),
+	DIRE_COLOR = new Color(190, 60, 50),
+	DEAD_COLOR = new Color(0, 0, 0, 170),
+	HEALTH_COLOR = new Color(70, 190, 60),
+	MANA_COLOR = new Color(60, 120, 230),
+	BAR_BACK = new Color(30, 30, 30, 220)
+
+function DrawBar(box: Rectangle, fraction: number, color: Color): void {
+	canvas.Rect(box.pos1, box.Size, { color: BAR_BACK })
+	const filled = Math.max(Math.min(fraction, 1), 0) * box.Width
+	if (filled > 0) {
+		canvas.Rect(box.pos1, new Vector2(filled, box.Height), { color })
+	}
+}
+
+function DrawPlayer(player: PlayerCustomData, radiant: boolean): void {
+	const slot = player.TeamSlot
+	if (slot < 0 || slot >= 5) {
 		return
 	}
-	RendererSDK.Image(
-		`panorama/images/heroes/${heroName}_png.vtex_c`,
-		rect.pos1,
-		-1,
-		rect.Size,
-		Color.White,
-		0,
-		undefined,
-		isDead
-	)
-}
-
-function DrawTopPanelRespawnTimer(rect: Rectangle, remaining: number): void {
-	RendererSDK.FilledRect(rect.pos1, rect.Size, new Color(0x18, 0x1b, 0x1d))
-	const text = remaining.toString()
-	const textSize = RendererSDK.GetTextSize(text)
-	RendererSDK.Text(
-		text,
-		new Vector2(
-			rect.pos1.x + (rect.Width - textSize.x) / 2,
-			rect.pos1.y + (rect.Height - textSize.y) / 2
+	const portrait = TopBar.Slot(radiant, slot),
+		hero = player.Hero,
+		name = hero?.Name ?? player.HeroName
+	if (name !== undefined && name !== "") {
+		canvas.Image(
+			`panorama/images/heroes/${name}_png.vtex_c`,
+			portrait.pos1,
+			portrait.Size,
+			{
+				fit: "cover",
+				grayscale: hero !== undefined && !hero.IsAlive
+			}
 		)
-	)
+	} else {
+		canvas.Rect(portrait.pos1, portrait.Size, { color: PANEL_COLOR })
+	}
+	const respawn = player.RespawnSeconds
+	if (hero !== undefined && !hero.IsAlive && respawn > 0) {
+		canvas.Rect(portrait.pos1, portrait.Size, { color: DEAD_COLOR })
+		TextCentered(Math.ceil(respawn).toString(), portrait, {
+			color: Color.White,
+			size: Math.round(16 * HudScale()),
+			weight: 700,
+			outline: true
+		})
+	}
+	if (hero !== undefined) {
+		DrawBar(TopBar.Bar(portrait, 0), hero.HP / Math.max(hero.MaxHP, 1), HEALTH_COLOR)
+		DrawBar(
+			TopBar.Bar(portrait, 1),
+			hero.Mana / Math.max(hero.MaxMana, 1),
+			MANA_COLOR
+		)
+	}
 }
 
-function DrawTeamsBackground(): void {
-	const radiantRect = GUIInfo.TopBar.RadiantTeamBackground,
-		direRect = GUIInfo.TopBar.DireTeamBackground
-	RendererSDK.Image(
-		"panorama/images/hud/reborn/top_bar_team_bg_psd.vtex_c",
-		radiantRect.pos1,
-		-1,
-		radiantRect.Size
-	)
-	RendererSDK.Image(
-		"panorama/images/hud/reborn/top_bar_team_bg_psd.vtex_c",
-		direRect.Size.AddForThis(direRect.pos1),
-		-1,
-		direRect.Size,
-		Color.White,
-		180
-	)
-}
-
-function DrawTeamScore(rect: Rectangle, score: number): void {
-	const text = score.toString(),
-		size = GUIInfo.ScaleHeight(22, RendererSDK.WindowSize)
-	const textSize = RendererSDK.GetTextSize(text, "Calibri", size)
-	RendererSDK.Text(
-		text,
-		new Vector2(
-			rect.pos1.x + (rect.Width - textSize.x) / 2,
-			rect.pos1.y + rect.Height / 2 - textSize.y
-		),
-		Color.White,
-		"Calibri",
-		size
-	)
-}
-
-function DrawTeamsScore(): void {
-	let radiantScore = 0,
-		direScore = 0
-	EntityManager.GetEntitiesByClass(Player).forEach(player => {
-		const data = PlayerResource?.PlayerTeamData[player.PlayerID]
-		if (data === undefined) {
-			return
+function TeamKills(team: Team): number {
+	let kills = 0
+	for (const player of PlayerCustomData.Array) {
+		if (player.Team === team) {
+			kills += Dota2SDK.PlayerResource?.PlayerTeamData[player.PlayerID]?.Kills ?? 0
 		}
-		if (player.Team === Team.Radiant) {
-			radiantScore += data.Kills
-		} else if (player.Team === Team.Dire) {
-			direScore += data.Kills
-		}
+	}
+	return kills
+}
+
+function DrawClock(): void {
+	const clock = TopBar.Clock(),
+		s = HudScale()
+	canvas.Rect(clock.pos1, clock.Size, { color: PANEL_COLOR, radius: 4 * s })
+	let time = Dota2SDK.GameRules?.GameTime ?? 0
+	const negative = time < 0
+	time = Math.abs(time)
+	const seconds = Math.floor(time % 60)
+		.toString()
+		.padStart(2, "0")
+	TextCentered(`${negative ? "-" : ""}${Math.floor(time / 60)}:${seconds}`, clock, {
+		color: Color.White,
+		size: Math.round(20 * s),
+		weight: 600
 	})
-	DrawTeamScore(GUIInfo.TopBar.RadiantTeamScore, radiantScore)
-	DrawTeamScore(GUIInfo.TopBar.DireTeamScore, direScore)
 }
 
-function DrawTimeOfDay(): void {
-	const clock = GUIInfo.TopBar.TimeOfDay
-	RendererSDK.Image(
-		"panorama/images/hud/reborn/bg_timer_psd.vtex_c",
-		clock.pos1,
-		-1,
-		clock.Size
-	)
-	let time = GameRules?.GameTime ?? 0
-	if (time < 0) {
-		time = Math.abs(time + 1)
-	}
-	let secondsText = Math.floor(time % 60).toString()
-	if (secondsText.length === 1) {
-		secondsText = `0${secondsText}`
-	}
-	const text = `${Math.floor(time / 60)}:${secondsText}`
-	const textSize = RendererSDK.GetTextSize(text)
-	RendererSDK.Text(
-		text,
-		new Vector2(
-			clock.pos1.x + (clock.Width - textSize.x) / 2,
-			clock.pos1.y + (clock.Height - textSize.y) / 2
-		)
-	)
+function DrawScore(radiant: boolean): void {
+	const box = TopBar.Score(radiant),
+		s = HudScale()
+	canvas.Rect(box.pos1, box.Size, { color: PANEL_COLOR })
+	TextCentered(TeamKills(radiant ? Team.Radiant : Team.Dire).toString(), box, {
+		color: radiant ? RADIANT_COLOR : DIRE_COLOR,
+		size: Math.round(22 * s),
+		weight: 700
+	})
 }
 
 const State = RootMenu.AddToggle("Top Panel", true)
-const Players = EntityManager.GetEntitiesByClass(Player)
 export function DrawTopPanel(): void {
 	if (!State.value) {
 		return
 	}
-	DrawTeamsBackground()
-	DrawTeamsScore()
-	DrawTimeOfDay()
-	for (const player of Players) {
-		if (player.Team !== Team.Radiant && player.Team !== Team.Dire) {
-			continue
-		}
-		const data = PlayerResource?.PlayerTeamData[player.PlayerID]
-		if (data === undefined) {
-			continue
-		}
-		const slot = data.TeamSlot
-		if (slot >= 5) {
-			continue
-		}
-		const rect =
-			player.Team === Team.Radiant
-				? GUIInfo.TopBar.RadiantPlayersHeroImages[slot]
-				: GUIInfo.TopBar.DirePlayersHeroImages[slot]
-		const isDead = data.RespawnSeconds > 0
-		DrawTopPanelHeroIcon(rect, UnitData.GetHeroNameByID(data.SelectedHeroID), isDead)
-		if (isDead) {
-			DrawTopPanelRespawnTimer(
-				player.Team === Team.Radiant
-					? GUIInfo.TopBar.RadiantPlayersRespawnTimers[slot]
-					: GUIInfo.TopBar.DirePlayersRespawnTimers[slot],
-				data.RespawnSeconds + 1
-			)
+	for (const radiant of [true, false]) {
+		const team = TopBar.Team(radiant)
+		canvas.Rect(team.pos1, team.Size, { color: PANEL_COLOR })
+		DrawScore(radiant)
+	}
+	DrawClock()
+	for (const player of PlayerCustomData.Array) {
+		if (player.Team === Team.Radiant) {
+			DrawPlayer(player, true)
+		} else if (player.Team === Team.Dire) {
+			DrawPlayer(player, false)
 		}
 	}
 }

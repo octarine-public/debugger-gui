@@ -1,262 +1,153 @@
-import {
-	Barrack,
-	Building,
-	Color,
-	ConVarsSDK,
-	Courier,
-	Creep,
-	DOTA_RUNES,
-	DOTA_SHOP_TYPE,
-	Entity,
-	EntityManager,
-	Fort,
-	Fountain,
-	GUIInfo,
-	HallOfFame,
-	Hero,
-	MinimapSDK,
-	NeutralItemStash,
-	NeutralSpawner,
-	NeutralSpawnerType,
-	RendererSDK,
-	RoshanSpawner,
-	Rune,
-	Shop,
-	Siege,
-	Team,
-	Tower
-} from "github.com/octarine-public/wrapper/index"
-
+import { canvas } from "./canvas"
+import { HudScale, MinimapBox } from "./layout"
 import { RootMenu } from "./menu"
 
-function DrawMinimapBackground(): void {
-	const minimapBlock = GUIInfo.Minimap.Minimap
-	RendererSDK.Image(
-		"panorama/images/hud/reborn/bg_minimap_psd.vtex_c",
-		minimapBlock.pos1,
-		-1,
-		minimapBlock.Size,
-		Color.White,
-		0,
-		minimapBlock
-	)
+const BORDER_COLOR = new Color(0, 0, 0, 230),
+	BACKGROUND_COLOR = new Color(20, 26, 22),
+	CAMP_COLOR = new Color(159, 105, 0),
+	ALLY_COLOR = new Color(80, 200, 80),
+	ENEMY_COLOR = new Color(220, 60, 50),
+	NEUTRAL_COLOR = new Color(220, 220, 220)
 
-	const minimap = GUIInfo.Minimap.MinimapRenderBounds,
-		material = ConVarsSDK.GetBoolean("dota_minimap_simple_background", true)
-			? (MinimapSDK.CurrentMinimapOverview?.simpleMaterial ??
-				MinimapSDK.CurrentMinimapOverview?.material ??
-				"")
-			: (MinimapSDK.CurrentMinimapOverview?.material ??
-				MinimapSDK.CurrentMinimapOverview?.simpleMaterial ??
-				"")
-	if (material !== "") {
-		RendererSDK.Image(
-			material,
-			minimap.pos1,
-			-1,
-			minimap.Size,
-			Color.White,
-			0,
-			minimapBlock
-		)
+/** Where `pos` falls on the minimap box, from the overview the map names */
+function ToMinimap(box: Rectangle, pos: Vector3): Nullable<Vector2> {
+	const overview = MinimapSDK.CurrentMinimapOverview
+	if (overview === undefined || overview.size <= 0) {
+		return undefined
+	}
+	const u = (pos.x - overview.pos.x) / overview.size,
+		v = (overview.pos.y - pos.y) / overview.size
+	if (u < 0 || u > 1 || v < 0 || v > 1) {
+		return undefined
+	}
+	return new Vector2(box.x + u * box.Width, box.y + v * box.Height)
+}
+
+function TeamColor(ent: Entity): Color {
+	if (ent.IsNeutral) {
+		return NEUTRAL_COLOR
+	}
+	return ent.IsEnemy() ? ENEMY_COLOR : ALLY_COLOR
+}
+
+function Dot(
+	box: Rectangle,
+	ent: Entity,
+	size: number,
+	color: Color,
+	square = false
+): void {
+	const at = ToMinimap(box, ent.Position)
+	if (at === undefined) {
+		return
+	}
+	const half = size / 2,
+		pos = new Vector2(at.x - half, at.y - half),
+		dimensions = new Vector2(size, size)
+	if (square) {
+		canvas.Rect(pos, dimensions, { color, borderColor: BORDER_COLOR, borderWidth: 1 })
+	} else {
+		canvas.Circle(pos, dimensions, {
+			color,
+			borderColor: BORDER_COLOR,
+			borderWidth: 1
+		})
 	}
 }
 
-function DrawEntityIcon(
-	ent: Entity,
-	name: string,
-	size = 600,
-	color = Color.White,
-	additionalPriority = 0
-) {
-	MinimapSDK.DrawIcon(
-		name,
-		ent.Position,
-		size,
-		color,
-		0,
-		ent,
-		0,
-		0,
-		-Number.MAX_SAFE_INTEGER + additionalPriority
-	)
-}
-
-function DrawMinimapCouriers(): void {
-	EntityManager.GetEntitiesByClass(Courier).forEach(courier => {
-		if (!courier.IsAlive || !courier.IsVisible) {
-			return
-		}
-		DrawEntityIcon(
-			courier,
-			courier.Team === Team.Radiant
-				? courier.IsFlying
-					? "courier_flying"
-					: "courier"
-				: courier.IsFlying
-					? "courier_dire_flying"
-					: "courier_dire",
-			200
-		)
+function DrawBackground(box: Rectangle): void {
+	canvas.Rect(box.pos1, box.Size, {
+		color: BACKGROUND_COLOR,
+		borderColor: BORDER_COLOR,
+		borderWidth: 2
 	})
+	const overview = MinimapSDK.CurrentMinimapOverview,
+		material = ConVarsSDK.GetBoolean("dota_minimap_simple_background", true)
+			? (overview?.simpleMaterial ?? overview?.material ?? "")
+			: (overview?.material ?? overview?.simpleMaterial ?? "")
+	if (material !== "") {
+		canvas.Image(material, box.pos1, box.Size, { fit: "stretch" })
+	}
 }
 
-function DrawMinimapHeroIcons(): void {
-	EntityManager.GetEntitiesByClass(Hero).forEach(hero => {
-		if (!hero.IsAlive || !hero.IsVisible) {
-			return
-		}
-		DrawEntityIcon(hero, `heroicon_${hero.Name}`, 600, Color.White, 1)
-	})
-}
+const MinimapNode = RootMenu.AddNode("Minimap")
+const State = MinimapNode.AddToggle("State", true),
+	CampsState = MinimapNode.AddToggle("Creep Camps", true),
+	CreepsState = MinimapNode.AddToggle("Creeps", true),
+	RunesState = MinimapNode.AddToggle("Runes", true),
+	CouriersState = MinimapNode.AddToggle("Couriers", true),
+	HeroesState = MinimapNode.AddToggle("Heroes", true),
+	BuildingsState = MinimapNode.AddToggle("Buildings", true)
 
-function DrawMinimapRuneIcons(): void {
-	EntityManager.GetEntitiesByClass(Rune).forEach(rune => {
-		if (!rune.IsVisible) {
-			return
-		}
-		let runeName = "unknown"
-		switch (rune.Type) {
-			case DOTA_RUNES.DOTA_RUNE_ARCANE:
-				runeName = "arcane"
-				break
-			case DOTA_RUNES.DOTA_RUNE_BOUNTY:
-				runeName = "bounty"
-				break
-			case DOTA_RUNES.DOTA_RUNE_DOUBLEDAMAGE:
-				runeName = "dd"
-				break
-			case DOTA_RUNES.DOTA_RUNE_HASTE:
-				runeName = "haste"
-				break
-			case DOTA_RUNES.DOTA_RUNE_ILLUSION:
-				runeName = "illusion"
-				break
-			case DOTA_RUNES.DOTA_RUNE_INVISIBILITY:
-				runeName = "invis"
-				break
-			case DOTA_RUNES.DOTA_RUNE_REGENERATION:
-				runeName = "regen"
-				break
-			default:
-				break
-		}
-		DrawEntityIcon(rune, `rune_${runeName}`)
-	})
-}
-
-function DrawMinimapBuildingIcons(): void {
-	EntityManager.GetEntitiesByClass(Building).forEach(building => {
-		if (!building.IsAlive || !building.IsVisible) {
-			return
-		}
-		let buildingName = "miscbuilding"
-		if (building instanceof Fort) {
-			buildingName = "ancient"
-		} else if (building instanceof Tower) {
-			buildingName = building.Name.includes("mid") ? "tower45" : "tower90"
-		} else if (building instanceof Barrack) {
-			buildingName = building.Name.includes("mid") ? "racks45" : "racks90"
-		} else if (building instanceof Shop) {
-			switch (building.ShopType) {
-				case DOTA_SHOP_TYPE.DOTA_SHOP_SECRET:
-					buildingName = "secretshop"
-					break
-				case DOTA_SHOP_TYPE.DOTA_SHOP_SIDE:
-					buildingName = "sideshop"
-					break
-				case DOTA_SHOP_TYPE.DOTA_SHOP_HOME:
-					return
-				default:
-					buildingName = "shop"
-					break
-			}
-		} else if (
-			building instanceof HallOfFame ||
-			building instanceof Fountain ||
-			building instanceof NeutralItemStash
-		) {
-			return
-		}
-		DrawEntityIcon(
-			building,
-			buildingName,
-			120,
-			building.IsNeutral
-				? Color.White
-				: building.IsEnemy()
-					? Color.Red
-					: Color.Green
-		)
-	})
-}
-
-const campColor = new Color(159, 105, 0)
-function DrawMinimapCreepCampIcons(): void {
-	EntityManager.GetEntitiesByClass(NeutralSpawner).forEach(spawner => {
-		let spawnerName = "creepcamp"
-		switch (spawner.Type) {
-			case NeutralSpawnerType.Ancient:
-				spawnerName = "creepcamp_ancient"
-				break
-			case NeutralSpawnerType.Large:
-				spawnerName = "creepcamp_big"
-				break
-			case NeutralSpawnerType.Medium:
-				spawnerName = "creepcamp_mid"
-				break
-			default:
-				break
-		}
-		DrawEntityIcon(spawner, spawnerName, 175, campColor)
-	})
-	EntityManager.GetEntitiesByClass(RoshanSpawner).forEach(spawner =>
-		DrawEntityIcon(spawner, "roshancamp", 200, Color.Red)
-	)
-}
-
-function DrawMinimapCreepIcons(): void {
-	EntityManager.GetEntitiesByClass(Creep).forEach(creep => {
-		if (!creep.IsAlive || !creep.IsVisible) {
-			return
-		}
-		let creepName = "creep"
-		if (creep instanceof Siege) {
-			creepName = "siege"
-		}
-		DrawEntityIcon(creep, creepName, 110, creep.IsEnemy() ? Color.Red : Color.Green)
-	})
-}
-
-const EntitiesNode = RootMenu.AddNode("Minimap")
-const State = EntitiesNode.AddToggle("State", true),
-	CreepCampIconsState = EntitiesNode.AddToggle("Creep Camps", true),
-	CreepIcons = EntitiesNode.AddToggle("Creeps", true),
-	RuneIcons = EntitiesNode.AddToggle("Runes", true),
-	Couriers = EntitiesNode.AddToggle("Couriers", true),
-	HeroIcons = EntitiesNode.AddToggle("Heroes", true),
-	BuildingIcons = EntitiesNode.AddToggle("Buildings", true)
 export function DrawMinimap(): void {
 	if (!State.value) {
 		return
 	}
-	DrawMinimapBackground()
-	if (CreepCampIconsState.value) {
-		DrawMinimapCreepCampIcons()
+	const box = MinimapBox(),
+		s = HudScale()
+	DrawBackground(box)
+	if (CampsState.value) {
+		for (const spawner of EntityManager.GetEntitiesByClass(NeutralSpawner)) {
+			Dot(box, spawner, 6 * s, CAMP_COLOR, true)
+		}
 	}
-	if (CreepIcons.value) {
-		DrawMinimapCreepIcons()
+	if (BuildingsState.value) {
+		for (const building of EntityManager.GetEntitiesByClass(Building)) {
+			if (building.IsAlive && !(building instanceof Shop)) {
+				Dot(
+					box,
+					building,
+					(building instanceof Fort ? 12 : 8) * s,
+					TeamColor(building),
+					true
+				)
+			}
+		}
 	}
-	if (RuneIcons.value) {
-		DrawMinimapRuneIcons()
+	if (CreepsState.value) {
+		for (const creep of EntityManager.GetEntitiesByClass(Creep)) {
+			if (creep.IsAlive && creep.IsVisible) {
+				Dot(box, creep, 5 * s, TeamColor(creep))
+			}
+		}
 	}
-	if (Couriers.value) {
-		DrawMinimapCouriers()
+	if (RunesState.value) {
+		for (const rune of EntityManager.GetEntitiesByClass(Rune)) {
+			if (rune.IsVisible) {
+				Dot(box, rune, 7 * s, Color.Aqua)
+			}
+		}
 	}
-	if (HeroIcons.value) {
-		DrawMinimapHeroIcons()
+	if (CouriersState.value) {
+		for (const courier of EntityManager.GetEntitiesByClass(Courier)) {
+			if (courier.IsAlive && courier.IsVisible) {
+				Dot(box, courier, 7 * s, TeamColor(courier), true)
+			}
+		}
 	}
-	if (BuildingIcons.value) {
-		DrawMinimapBuildingIcons()
+	if (HeroesState.value) {
+		const size = 22 * s
+		for (const hero of EntityManager.GetEntitiesByClass(Hero)) {
+			if (!hero.IsAlive || !hero.IsVisible || hero.IsIllusion) {
+				continue
+			}
+			const at = ToMinimap(box, hero.Position)
+			if (at === undefined) {
+				continue
+			}
+			const pos = new Vector2(at.x - size / 2, at.y - size / 2),
+				dimensions = new Vector2(size, size)
+			canvas.Circle(pos.SubtractScalar(1), dimensions.AddScalar(2), {
+				color: TeamColor(hero)
+			})
+			canvas.Image(
+				`panorama/images/heroes/icons/${hero.Name}_png.vtex_c`,
+				pos,
+				dimensions,
+				{
+					circle: true
+				}
+			)
+		}
 	}
 }

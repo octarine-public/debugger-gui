@@ -1,10 +1,4 @@
-import {
-	GUIInfo,
-	Input,
-	RendererSDK,
-	Vector2
-} from "github.com/octarine-public/wrapper/index"
-
+import { canvas, Scale } from "./canvas"
 import { RootMenu } from "./menu"
 
 const State = RootMenu.AddToggle("Show cursor")
@@ -12,14 +6,10 @@ export function DrawCursor(): void {
 	if (!State.value) {
 		return
 	}
-	const screenSize = RendererSDK.WindowSize
-	RendererSDK.Image(
+	const size = Scale(28)
+	canvas.Image(
 		"resource/cursor/source/cursor_default.png",
-		Input.CursorOnScreen,
-		-1,
-		new Vector2(
-			GUIInfo.ScaleWidth(28, screenSize),
-			GUIInfo.ScaleHeight(28, screenSize)
-		)
+		InputManager.CursorOnScreen,
+		new Vector2(size, size)
 	)
 }

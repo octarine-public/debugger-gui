@@ -1,15 +1,4 @@
-import {
-	Color,
-	Entity,
-	EntityManager,
-	GameActivity,
-	Input,
-	RendererSDK,
-	Unit,
-	Vector2,
-	Vector3
-} from "github.com/octarine-public/wrapper/index"
-
+import { canvas } from "./canvas"
 import { RootMenu } from "./menu"
 
 const AttachmentsNode = RootMenu.AddNode("Attachments")
@@ -47,11 +36,11 @@ function RenderAttachment(
 		return
 	}
 
-	if (Input.CursorOnScreen.Distance(screenPos) < 16) {
-		RendererSDK.Text(name, screenPos, color)
+	if (InputManager.CursorOnScreen.Distance(screenPos) < 16) {
+		canvas.Text(name, screenPos, { color })
 	}
 
-	RendererSDK.FilledRect(screenPos.SubtractScalar(4), new Vector2(8, 8), color)
+	canvas.Rect(screenPos.SubtractScalar(4), new Vector2(8, 8), { color })
 }
 
 export function DrawAttachments(): void {

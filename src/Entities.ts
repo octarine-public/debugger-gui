@@ -1,25 +1,4 @@
-import {
-	Ability,
-	ArrayExtensions,
-	Color,
-	Creep,
-	Entity,
-	EntityManager,
-	EventsSDK,
-	GUIInfo,
-	Hero,
-	ImageData,
-	Input,
-	LocalPlayer,
-	ParticlesSDK,
-	Rectangle,
-	RendererSDK,
-	Rune,
-	Tree,
-	Unit,
-	Vector2
-} from "github.com/octarine-public/wrapper/index"
-
+import { canvas, Scale } from "./canvas"
 import { RootMenu } from "./menu"
 
 function UnitPath(name: string): string {
@@ -102,22 +81,13 @@ function RenderEntity(ent: Entity, size: Vector2, path: string): void {
 		return
 	}
 	screenPos.SubtractForThis(size.DivideScalar(2))
-	RendererSDK.FilledCircle(
-		screenPos.SubtractScalar(2),
-		size.AddScalar(4),
-		GetEntityTeamColor(ent)
-	)
-	RendererSDK.Image(path, screenPos, 0, size)
+	canvas.Circle(screenPos.SubtractScalar(2), size.AddScalar(4), {
+		color: GetEntityTeamColor(ent)
+	})
+	canvas.Image(path, screenPos, size, { circle: true })
 	const position = new Rectangle(screenPos, screenPos.Add(size))
 
-	const isUnder = Input.CursorOnScreen.IsUnderRectangle(
-		position.pos1.x,
-		position.pos1.y,
-		position.Width,
-		position.Height
-	)
-
-	if (!isUnder) {
+	if (!position.Contains(InputManager.CursorOnScreen)) {
 		return
 	}
 
@@ -129,17 +99,17 @@ function RenderEntity(ent: Entity, size: Vector2, path: string): void {
 		predictedIsWaitingToSpawn = ent.PredictedIsWaitingToSpawn
 	}
 
-	const text = `
-		IsAlive: ${ent.IsAlive}
-		IsVisible: ${ent.IsVisible}
-		IsWaitingToSpawn: ${isWaitingToSpawn}
-		IsWaitingToSpawnPredicted: ${predictedIsWaitingToSpawn}
-		Index: ${ent.Index}
-		Handle: ${ent.Handle}
-		Name: ${ent.Name}
-		ClassName: ${ent.ClassName}
-	`
-	RendererSDK.TextByFlags(text, position, Color.White, 4)
+	const text = [
+		`IsAlive: ${ent.IsAlive}`,
+		`IsVisible: ${ent.IsVisible}`,
+		`IsWaitingToSpawn: ${isWaitingToSpawn}`,
+		`IsWaitingToSpawnPredicted: ${predictedIsWaitingToSpawn}`,
+		`Index: ${ent.Index}`,
+		`Handle: ${ent.Handle}`,
+		`Name: ${ent.Name}`,
+		`ClassName: ${ent.ClassName}`
+	].join("\n")
+	canvas.Text(text, position.pos2, { color: Color.White, outline: true })
 }
 
 const Trees = EntityManager.GetEntitiesByClass(Tree)
@@ -154,7 +124,7 @@ function DrawTrees(size: Vector2): void {
 			continue
 		}
 		screenPos.SubtractForThis(treeSize.DivideScalar(2))
-		RendererSDK.FilledCircle(screenPos, treeSize, Color.Yellow)
+		canvas.Circle(screenPos, treeSize, { color: Color.Yellow })
 	}
 }
 
@@ -200,7 +170,7 @@ function DrawOther(): void {
 		if (text.length === 0) {
 			text = ent.ClassName
 		}
-		RendererSDK.Text(text, screenPos, GetEntityTeamColor(ent))
+		canvas.Text(text, screenPos, { color: GetEntityTeamColor(ent) })
 	}
 }
 
@@ -216,7 +186,12 @@ EventsSDK.on("EntityCreated", ent => {
 	}
 	otherEnts.push(ent)
 })
-EventsSDK.on("EntityDestroyed", ent => ArrayExtensions.arrayRemove(otherEnts, ent))
+EventsSDK.on("EntityDestroyed", ent => {
+	const index = otherEnts.indexOf(ent)
+	if (index !== -1) {
+		otherEnts.splice(index, 1)
+	}
+})
 
 const EntitiesNode = RootMenu.AddNode("Entities")
 const TreesState = EntitiesNode.AddToggle("Trees", true),
@@ -225,8 +200,7 @@ const TreesState = EntitiesNode.AddToggle("Trees", true),
 	HeroesState = EntitiesNode.AddToggle("Heroes", true),
 	Other = EntitiesNode.AddToggle("Other", true),
 	Hitboxes = EntitiesNode.AddToggle("Hitboxes", false),
-	Icons = EntitiesNode.AddToggle("Icons", true),
-	particles = new ParticlesSDK()
+	Icons = EntitiesNode.AddToggle("Icons", true)
 
 function DrawHitboxes(): void {
 	EntityManager.AllEntities.forEach(ent => {
@@ -245,23 +219,12 @@ function DrawHitboxes(): void {
 		} else if (ent instanceof Hero && (!HeroesState.value || !ent.IsAlive)) {
 			return
 		}
-		ent.BoundingBox.Polygon.Draw(
-			"",
-			LocalPlayer!.Hero!,
-			particles,
-			GetEntityTeamColor(ent),
-			40,
-			40,
-			false
-		)
+		canvas.WorldPolygon(ent.BoundingBox.Polygon.Points, GetEntityTeamColor(ent), 2)
 	})
 }
 
 export function DrawEntities(): void {
-	const size = new Vector2(
-		GUIInfo.ScaleWidth(64, RendererSDK.WindowSize),
-		GUIInfo.ScaleHeight(64, RendererSDK.WindowSize)
-	)
+	const size = new Vector2(Scale(64), Scale(64))
 	if (Hitboxes.value) {
 		DrawHitboxes()
 	}
