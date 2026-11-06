@@ -15,12 +15,24 @@ interface ReplayNatives {
 	INTERNAL_DEBUGGER_Restart(): void
 	/** Replays from the recording's start, skipping `seconds` * 30 ticks */
 	INTERNAL_DEBUGGER_Skip(seconds: number): void
+	/** Replays from the recording's start, skipping that many ticks; missing in older debuggers */
+	INTERNAL_DEBUGGER_SkipTicks?(ticks: number): void
+	/**
+	 * The server tick of every tick the replay goes through, [0] being the first's: the game's clock
+	 * along the recording. Missing in older debuggers
+	 */
+	INTERNAL_DEBUGGER_ServerTicks?(): number[]
 	/** Seconds from the recording's first TIME record to the replay's position */
 	INTERNAL_DEBUGGER_Seconds(): number
 	/** Ticks replayed since the recording's start */
 	INTERNAL_DEBUGGER_Tick(): number
 	/** Ticks in the whole recording */
 	INTERNAL_DEBUGGER_TotalTicks(): number
+	/**
+	 * Replays from the start begun so far: a Restart or Skip has begun once this passes the count
+	 * before it. Missing in older debuggers
+	 */
+	INTERNAL_DEBUGGER_Restarts?(): number
 	/** Real milliseconds: hrtime runs on the recording's clock, which stands still between steps */
 	INTERNAL_DEBUGGER_RealTime(): number
 	/**
@@ -39,6 +51,16 @@ const natives = globalThis as unknown as Partial<ReplayNatives>
 export const IsReplay = typeof natives.INTERNAL_DEBUGGER_Tick === "function"
 
 const TICKS_PER_SECOND = 30,
+	/** Server ticks per second of game time */
+	SERVER_TICKS_PER_SECOND = 30,
+	/** Ticks a game time seek replays with the scripts before the moment, so it lands on it exactly */
+	SEEK_LEAD_TICKS = 30,
+	/** Ticks short of the moment past which a game time seek replays from the start again instead of stepping */
+	SEEK_MAX_STEP_TICKS = 900,
+	/** Replays from the start a game time seek makes at most before it steps the rest of the way */
+	SEEK_MAX_SKIPS = 4,
+	/** Ticks between the game clock anchors kept, unless the clock's offset moved (a pause) */
+	ANCHOR_SPACING_TICKS = 900,
 	/** Steps asked for and not replayed yet at most, so a slow replay is not buried under a queue of them */
 	MAX_PENDING_STEPS = 64,
 	TEXT_COLOR = new Color(225, 225, 225),
@@ -65,9 +87,67 @@ let playing = false,
 	lastFrameAt = 0,
 	/** Whether the window's left button was down on the last frame */
 	wasPressed = false,
-	onSpeed: Nullable<(value: number) => void>
+	onSpeed: Nullable<(value: number) => void>,
+	/** The game time seek under way */
+	gameTimeSeek: GameTimeSeek | undefined,
+	/**
+	 * The replay tick the scripts last had entities for: after a skip the replay is there a frame or more
+	 * before the scripts are, and the entities they read are still the old ones
+	 */
+	scriptsTick = -1
+
+/**
+ * Where the replay saw the game clock: the server tick's seconds minus the game clock there are the time
+ * before the horn and the pauses so far
+ */
+interface ClockAnchor {
+	tick: number
+	offset: number
+}
+
+/** A seek to a moment of the game clock, which ticks of the recording do not map to until replayed */
+interface GameTimeSeek {
+	/** The game clock's seconds to stop at */
+	target: number
+	/** The tick the last replay from the start skips to */
+	skipTo: number
+	/** Replays from the start so far */
+	skips: number
+	/** The tick the steps asked for so far lead to */
+	stepTo: number
+	/** Whether the replay played before the seek, and goes on playing after it */
+	resume: boolean
+}
 
 const native = () => natives as ReplayNatives
+
+/** The server tick of every replay tick; empty on a debugger without them */
+const serverTicks: number[] = IsReplay
+		? (native().INTERNAL_DEBUGGER_ServerTicks?.() ?? [])
+		: [],
+	/**
+	 * The replay ticks a new server session starts at, where the server tick falls back: a recording
+	 * can begin in the session before the match's
+	 */
+	sessionStarts: number[] = [0],
+	/** The game clock where the replay saw it, by tick; at most one per {@link ANCHOR_SPACING_TICKS} */
+	clockAnchors: ClockAnchor[] = []
+/**
+ * The replays from the start asked for so far: until the debugger begins the last one, its tick and the
+ * scripts' entities are still those from before it
+ */
+let restartsAsked = IsReplay ? (native().INTERNAL_DEBUGGER_Restarts?.() ?? 0) : 0
+
+/** Whether the debugger has begun the last replay from the start asked for; a debugger that cannot tell says yes */
+function RestartBegun(): boolean {
+	const restarts = native().INTERNAL_DEBUGGER_Restarts
+	return restarts === undefined || restarts() >= restartsAsked
+}
+for (let i = 1; i < serverTicks.length; i++) {
+	if (serverTicks[i] < serverTicks[i - 1]) {
+		sessionStarts.push(i)
+	}
+}
 
 /** Real milliseconds, also in a replay, where hrtime stands still between steps */
 export const RealTime = () =>
@@ -111,6 +191,9 @@ function ReplayStepTick(): void {
 
 /** Replays from the start up to `seconds` of ticks; the replay goes on playing or stays paused */
 function ReplaySeek(seconds: number): void {
+	gameTimeSeek = undefined
+	scriptsTick = -1
+	restartsAsked++
 	const whole = Math.max(Math.round(seconds), 0)
 	if (whole === 0) {
 		native().INTERNAL_DEBUGGER_Restart()
@@ -119,6 +202,277 @@ function ReplaySeek(seconds: number): void {
 	}
 	requested = whole * TICKS_PER_SECOND
 	owed = 0
+}
+
+/** Replays from the start, skipping `ticks` ticks; the tick it skips to */
+function SkipTicks(ticks: number): number {
+	restartsAsked++
+	const whole = Math.max(Math.round(ticks), 0)
+	if (whole === 0) {
+		native().INTERNAL_DEBUGGER_Restart()
+		return 0
+	}
+	const skipTicks = native().INTERNAL_DEBUGGER_SkipTicks
+	if (skipTicks !== undefined) {
+		skipTicks(whole)
+		return whole
+	}
+	const seconds = Math.max(Math.round(whole / TICKS_PER_SECOND), 1)
+	native().INTERNAL_DEBUGGER_Skip(seconds)
+	return seconds * TICKS_PER_SECOND
+}
+
+/** The server tick's seconds after replay tick `tick` (ticks replayed), undefined where unknown */
+function ServerSecondsAt(tick: number): number | undefined {
+	const serverTick = serverTicks[Math.min(Math.max(tick, 1), serverTicks.length) - 1]
+	return serverTick !== undefined && serverTick !== 0
+		? serverTick / SERVER_TICKS_PER_SECOND
+		: undefined
+}
+
+/**
+ * The game clock at the replay's tick, once the game runs (not in the hero pick), from the game rules'
+ * fields and the tick's server tick: GameRules.GameTime goes by a raw time the scripts move on between
+ * ticks and keep stale after a skip. Undefined while the scripts' entities are not the tick's
+ */
+function GameClock(): number | undefined {
+	const rules = Dota2SDK.GameRules,
+		tick = native().INTERNAL_DEBUGGER_Tick(),
+		serverTick = serverTicks[tick - 1]
+	if (
+		rules === undefined ||
+		serverTick === undefined ||
+		scriptsTick !== tick ||
+		!RestartBegun()
+	) {
+		return undefined
+	}
+	const pausedTicks =
+			typeof rules.TotalPausedTicks === "number" ? rules.TotalPausedTicks : 0,
+		now =
+			rules.IsPaused && rules.PauseStartTick > 0
+				? rules.PauseStartTick
+				: serverTick,
+		rawTime = (now - pausedTicks) / SERVER_TICKS_PER_SECOND
+	switch (rules.GameState) {
+		case Dota2SDK.DOTAGameState.DOTA_GAMERULES_STATE_PRE_GAME:
+			return rawTime - rules.StateTransitionTime
+		case Dota2SDK.DOTAGameState.DOTA_GAMERULES_STATE_GAME_IN_PROGRESS:
+		case Dota2SDK.DOTAGameState.DOTA_GAMERULES_STATE_POST_GAME:
+			return rawTime - rules.GameStartTime - rules.GameLoadTime
+		default:
+			return undefined
+	}
+}
+
+/** Keeps where the replay is now as a game clock anchor; the game clock */
+function LearnClockOffset(): number | undefined {
+	const gameTime = GameClock(),
+		tick = native().INTERNAL_DEBUGGER_Tick(),
+		serverSeconds = ServerSecondsAt(tick)
+	if (gameTime === undefined || serverSeconds === undefined) {
+		return gameTime
+	}
+	const offset = serverSeconds - gameTime
+	let at = clockAnchors.length
+	while (at > 0 && clockAnchors[at - 1].tick > tick) {
+		at--
+	}
+	const before = clockAnchors[at - 1]
+	if (
+		before === undefined ||
+		tick - before.tick >= ANCHOR_SPACING_TICKS ||
+		Math.abs(offset - before.offset) > 0.5 ||
+		SessionStart(before.tick) !== SessionStart(tick)
+	) {
+		clockAnchors.splice(at, 0, { tick, offset })
+	}
+	return gameTime
+}
+
+/** The replay tick the server session of replay tick `tick` starts at */
+function SessionStart(tick: number): number {
+	let start = 0
+	for (const sessionStart of sessionStarts) {
+		if (sessionStart >= tick) {
+			break
+		}
+		start = sessionStart
+	}
+	return start
+}
+
+/** The anchor nearest `tick` in its session: the last before it, else the first after it */
+function AnchorNear(tick: number): ClockAnchor | undefined {
+	const session = SessionStart(tick)
+	let found: ClockAnchor | undefined
+	for (const anchor of clockAnchors) {
+		if (SessionStart(anchor.tick) !== session) {
+			continue
+		}
+		if (anchor.tick > tick && found !== undefined) {
+			break
+		}
+		found = anchor
+		if (anchor.tick > tick) {
+			break
+		}
+	}
+	return found
+}
+
+/** The game clock at replay tick `tick` as the anchors give it; undefined until the replay saw the game */
+function GameTimeAt(tick: number): number | undefined {
+	const serverSeconds = ServerSecondsAt(tick),
+		anchor = AnchorNear(tick)
+	return serverSeconds !== undefined && anchor !== undefined
+		? serverSeconds - anchor.offset
+		: undefined
+}
+
+/**
+ * The first replay tick the game clock reaches `gameTime` at, as the anchors give it: the anchor seen
+ * last before that moment, else the first after it (pauses between them move it on). Without anchors it
+ * takes the last session and no time before the horn, so it lands early
+ */
+function TickAtGameTime(gameTime: number): number {
+	let anchor: ClockAnchor | undefined
+	for (const candidate of clockAnchors) {
+		const at = ServerSecondsAt(candidate.tick)! - candidate.offset
+		if (at > gameTime && anchor !== undefined) {
+			break
+		}
+		anchor = candidate
+		if (at > gameTime) {
+			break
+		}
+	}
+	const start =
+			anchor !== undefined
+				? SessionStart(anchor.tick)
+				: sessionStarts[sessionStarts.length - 1],
+		serverTick = (gameTime + (anchor?.offset ?? 0)) * SERVER_TICKS_PER_SECOND
+	for (let i = start; i < serverTicks.length; i++) {
+		if (
+			serverTicks[i] >= serverTick ||
+			(i > start && serverTicks[i] < serverTicks[i - 1])
+		) {
+			return i + 1
+		}
+	}
+	return serverTicks.length
+}
+
+/**
+ * Puts the replay at `gameTime` seconds of the game clock (52:26 is 3146; before the horn negative):
+ * replays from the start to a little before where the server ticks put it, then steps to it with the
+ * scripts. Where the game clock is not known yet it lands early and replays from the start once more
+ */
+function ReplaySeekGameTime(gameTime: number): void {
+	if (!Number.isFinite(gameTime)) {
+		return
+	}
+	if (serverTicks.length === 0) {
+		console.log(
+			"debugger-gui: this octarine-debugger has no server ticks, seeking to the game clock needs a newer one"
+		)
+		return
+	}
+	LearnClockOffset()
+	const resume = playing || (gameTimeSeek?.resume ?? false)
+	SetReplayPlaying(false)
+	scriptsTick = -1
+	const skipTo = SkipTicks(TickAtGameTime(gameTime) - SEEK_LEAD_TICKS)
+	requested = skipTo
+	owed = 0
+	gameTimeSeek = { target: gameTime, skipTo, skips: 1, stepTo: skipTo, resume }
+}
+
+/** Moves a game time seek on by a frame: waits out its skip, then skips again or steps */
+function SeekGameTimeFrame(seek: GameTimeSeek): void {
+	const tick = native().INTERNAL_DEBUGGER_Tick(),
+		total = native().INTERNAL_DEBUGGER_TotalTicks()
+	if (
+		!RestartBegun() ||
+		tick < seek.skipTo ||
+		tick < seek.stepTo ||
+		scriptsTick !== tick
+	) {
+		return
+	}
+	const gameTime = LearnClockOffset()
+	if (gameTime !== undefined && gameTime >= seek.target) {
+		// landed past it: the offset was seen later than the moment, with pauses before it
+		if (
+			gameTime - seek.target > 1 &&
+			seek.skips < SEEK_MAX_SKIPS &&
+			seek.skipTo > 0
+		) {
+			Reskip(seek, TickAtGameTime(seek.target) - SEEK_LEAD_TICKS * 2)
+			return
+		}
+		FinishGameTimeSeek(seek)
+		return
+	}
+	if (tick >= total) {
+		FinishGameTimeSeek(seek)
+		return
+	}
+	const left =
+		gameTime !== undefined
+			? TickAtGameTime(seek.target) - tick
+			: tick === seek.skipTo
+				? 1
+				: MAX_PENDING_STEPS
+	if (left > SEEK_MAX_STEP_TICKS && seek.skips < SEEK_MAX_SKIPS) {
+		Reskip(seek, tick + left - SEEK_LEAD_TICKS)
+		return
+	}
+	const steps = Math.min(Math.max(left, 1), MAX_PENDING_STEPS, total - tick)
+	for (let i = steps; i--; ) {
+		native().INTERNAL_DEBUGGER_Step()
+	}
+	seek.stepTo = tick + steps
+	requested = seek.stepTo
+}
+
+function Reskip(seek: GameTimeSeek, tick: number): void {
+	scriptsTick = -1
+	seek.skipTo = SkipTicks(tick)
+	seek.stepTo = seek.skipTo
+	seek.skips++
+	requested = seek.skipTo
+}
+
+function FinishGameTimeSeek(seek: GameTimeSeek): void {
+	gameTimeSeek = undefined
+	if (seek.resume) {
+		SetReplayPlaying(true)
+	}
+}
+
+/** Seconds of the game clock written as 52:26, -1:30, 3146 or 52:26.5 */
+function ParseGameTime(text: string): number | undefined {
+	const match = /^\s*(-)?\s*(?:(\d+):)?(\d+(?:\.\d+)?)\s*$/.exec(text)
+	if (match === null) {
+		return undefined
+	}
+	const seconds =
+		(match[2] !== undefined ? Number(match[2]) * 60 : 0) + Number(match[3])
+	return match[1] !== undefined ? -seconds : seconds
+}
+
+/** The game clock as Dota shows it, with a minus before the horn */
+function FormatGameTime(seconds: number): string {
+	return seconds < 0 ? `-${FormatTime(-seconds)}` : FormatTime(seconds)
+}
+
+/** A track position's replay time, and the game clock there once known */
+function TrackLabel(seconds: number): string {
+	const gameTime = GameTimeAt(Math.round(seconds * TICKS_PER_SECOND))
+	return gameTime !== undefined
+		? `${FormatTime(seconds)} · ${FormatGameTime(gameTime)}`
+		: FormatTime(seconds)
 }
 
 function ReplaySeekBy(seconds: number): void {
@@ -195,7 +549,7 @@ function DrawOverlay(): void {
 		button = height - pad * 2,
 		tick = native().INTERNAL_DEBUGGER_Tick(),
 		total = native().INTERNAL_DEBUGGER_TotalTicks(),
-		gameTime = Dota2SDK.GameRules?.GameTime,
+		gameTime = GameClock() ?? Dota2SDK.GameRules?.GameTime,
 		cursor = LiveCursor()
 	canvas.Rect(panel.pos1, panel.Size, {
 		color: PANEL_COLOR,
@@ -274,7 +628,11 @@ function DrawOverlay(): void {
 	)
 	canvas.TextIn(
 		[
-			gameTime !== undefined ? `${localize("Game")} ${FormatTime(gameTime)}` : "",
+			gameTimeSeek !== undefined
+				? `${localize("Going to")} ${FormatGameTime(gameTimeSeek.target)}`
+				: gameTime !== undefined
+					? `${localize("Game")} ${FormatGameTime(gameTime)}`
+					: "",
 			FpsAt(tick) !== undefined ? `${FpsAt(tick)} FPS` : ""
 		]
 			.filter(part => part !== "")
@@ -307,19 +665,21 @@ function DrawOverlay(): void {
 			bottom = panel.y - 12 * s
 		graph.pos1.SetVector(panel.x + 6 * s, bottom - graphHeight)
 		graph.pos2.SetVector(panel.pos2.x - 6 * s, bottom)
-		DrawFpsGraph(graph, total, tick, cursor, s, x => FormatTime(GraphSeconds(x)))
+		DrawFpsGraph(graph, total, tick, cursor, s, x => TrackLabel(GraphSeconds(x)))
 	}
 	const hitBox = new Rectangle(
 		new Vector2(track.x, panel.y),
 		new Vector2(track.pos2.x, panel.pos2.y)
 	)
 	if (hitBox.Contains(cursor)) {
-		const hint = new Rectangle(
-			new Vector2(cursor.x - 30 * s, panel.y - 22 * s),
-			new Vector2(cursor.x + 30 * s, panel.y - 2 * s)
-		)
+		const label = TrackLabel(TrackSeconds(cursor.x)),
+			halfHint = (label.length > 6 ? 56 : 30) * s,
+			hint = new Rectangle(
+				new Vector2(cursor.x - halfHint, panel.y - 22 * s),
+				new Vector2(cursor.x + halfHint, panel.y - 2 * s)
+			)
 		canvas.Rect(hint.pos1, hint.Size, { color: PANEL_COLOR, radius: 3 * s })
-		canvas.TextIn(FormatTime(TrackSeconds(cursor.x)), hint, {
+		canvas.TextIn(label, hint, {
 			color: TEXT_COLOR,
 			family,
 			size,
@@ -378,22 +738,38 @@ if (IsReplay) {
 		step: ReplayStepTick,
 		seek: ReplaySeek,
 		seekBy: ReplaySeekBy,
+		/** To a moment of the game clock: seekGameTime("52:26") or seekGameTime(3146) */
+		seekGameTime: (time: number | string) =>
+			ReplaySeekGameTime(
+				typeof time === "string" ? (ParseGameTime(time) ?? NaN) : time
+			),
 		state: () => ({
 			playing,
 			speed,
 			tick: native().INTERNAL_DEBUGGER_Tick(),
 			totalTicks: native().INTERNAL_DEBUGGER_TotalTicks(),
-			seconds: native().INTERNAL_DEBUGGER_Seconds()
+			seconds: native().INTERNAL_DEBUGGER_Seconds(),
+			gameTime: GameClock(),
+			seekingTo: gameTimeSeek?.target
 		})
 	}
+	EventsSDK.on(
+		"PostDataUpdate",
+		() => (scriptsTick = native().INTERNAL_DEBUGGER_Tick())
+	)
 	EventsSDK.on("Draw", () => {
 		const pressed = (native().INTERNAL_DEBUGGER_LiveMouse()[2] & MK_LBUTTON) !== 0
 		if (pressed && !wasPressed) {
 			OnClick()
 		}
 		wasPressed = pressed
-		if (playing) {
-			Play()
+		if (gameTimeSeek !== undefined) {
+			SeekGameTimeFrame(gameTimeSeek)
+		} else {
+			if (playing) {
+				Play()
+			}
+			LearnClockOffset()
 		}
 	})
 }
@@ -435,17 +811,13 @@ if (IsReplay) {
 	replayMenu
 		.AddKeybind("Forward 60 s", "", "Skips 60 s ahead")
 		.OnRelease(() => ReplaySeekBy(60))
-	const goToMinute = replayMenu.AddSlider(
-		"Minute",
-		0,
-		0,
-		120,
-		1,
-		"Where Go to puts the replay, in minutes of replayed ticks"
-	)
+	const goToTime = replayMenu.AddTextInput("Game time", "52:26")
 	replayMenu
-		.AddButton("Go to", "Replays from the start up to the minute above")
-		.OnValue(() => ReplaySeek(goToMinute.value * 60))
+		.AddButton(
+			"Go to",
+			"Puts the replay at the game clock above (52:26, -1:30 before the horn)"
+		)
+		.OnValue(() => ReplaySeekGameTime(ParseGameTime(goToTime.text) ?? NaN))
 	replayMenu
 		.AddButton("Restart", "Replays from the recording's start")
 		.OnValue(() => ReplaySeek(0))
