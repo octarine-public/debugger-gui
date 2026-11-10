@@ -1,5 +1,6 @@
 import { canvas } from "./canvas"
-import { RootMenu } from "./menu"
+import { GuiIcons, WithIcon } from "./icons"
+import { AddSection } from "./menu"
 
 const FRAME_COLOR = new Color(0, 0, 0, 230),
 	EMPTY_COLOR = new Color(40, 16, 14),
@@ -13,15 +14,14 @@ const FRAME_COLOR = new Color(0, 0, 0, 230),
 	/** A divider every this many hit points, as the game cuts a hero's row */
 	DIVIDER_HP = 250
 
-const BarsNode = RootMenu.AddNode("World bars")
-const State = BarsNode.AddToggle("State", true),
-	Allies = BarsNode.AddToggle("Allies", true),
-	Enemies = BarsNode.AddToggle("Enemies", true),
-	Heroes = BarsNode.AddToggle("Heroes", true),
-	Others = BarsNode.AddToggle("Creeps and buildings", true),
-	Mana = BarsNode.AddToggle("Mana", true),
-	Level = BarsNode.AddToggle("Level", true),
-	Numbers = BarsNode.AddToggle("Hero health numbers", false)
+const [BarsNode, State] = AddSection("World bars", GuiIcons.WorldBars)
+const Allies = WithIcon(BarsNode.AddToggle("Allies", true), GuiIcons.Allies),
+	Enemies = WithIcon(BarsNode.AddToggle("Enemies", true), GuiIcons.Enemies),
+	Heroes = WithIcon(BarsNode.AddToggle("Heroes", true), GuiIcons.Heroes),
+	Others = WithIcon(BarsNode.AddToggle("Creeps and buildings", true), GuiIcons.Creeps),
+	Mana = WithIcon(BarsNode.AddToggle("Mana", true), GuiIcons.Mana),
+	Level = WithIcon(BarsNode.AddToggle("Level", true), GuiIcons.Level),
+	Numbers = WithIcon(BarsNode.AddToggle("Hero health numbers", false), GuiIcons.Numbers)
 
 const anchor = new Vector2()
 

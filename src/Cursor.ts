@@ -1,7 +1,8 @@
 import { canvas, Scale } from "./canvas"
+import { GuiIcons, WithIcon } from "./icons"
 import { RootMenu } from "./menu"
 
-const State = RootMenu.AddToggle("Show cursor")
+const State = WithIcon(RootMenu.AddToggle("Show cursor"), GuiIcons.Cursor)
 export function DrawCursor(): void {
 	if (!State.value) {
 		return

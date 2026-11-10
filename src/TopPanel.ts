@@ -1,4 +1,5 @@
 import { canvas, TextCentered } from "./canvas"
+import { GuiIcons, WithIcon } from "./icons"
 import { HudScale, TopBar } from "./layout"
 import { RootMenu } from "./menu"
 
@@ -97,7 +98,7 @@ function DrawScore(radiant: boolean): void {
 	})
 }
 
-const State = RootMenu.AddToggle("Top Panel", true)
+const State = WithIcon(RootMenu.AddToggle("Top Panel", true), GuiIcons.TopPanel)
 export function DrawTopPanel(): void {
 	if (!State.value) {
 		return

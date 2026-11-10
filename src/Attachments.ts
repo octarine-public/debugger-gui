@@ -1,11 +1,20 @@
 import { canvas } from "./canvas"
-import { RootMenu } from "./menu"
+import { GuiIcons, WithIcon } from "./icons"
+import { AddSection } from "./menu"
 
-const AttachmentsNode = RootMenu.AddNode("Attachments")
-const State = AttachmentsNode.AddToggle("State", true),
-	GameTimeState = AttachmentsNode.AddToggle("Use game time", false),
-	Offset = AttachmentsNode.AddSlider("Frame offset", 0, -30, 30),
-	useNetworkActivity = AttachmentsNode.AddToggle("Use network activity", false)
+const [AttachmentsNode, State] = AddSection("Attachments", GuiIcons.Attachments)
+const GameTimeState = WithIcon(
+		AttachmentsNode.AddToggle("Use game time", false),
+		GuiIcons.GameTime
+	),
+	Offset = WithIcon(
+		AttachmentsNode.AddSlider("Frame offset", 0, -30, 30),
+		GuiIcons.FrameOffset
+	),
+	useNetworkActivity = WithIcon(
+		AttachmentsNode.AddToggle("Use network activity", false),
+		GuiIcons.NetworkActivity
+	)
 
 function RenderAttachment(
 	ent: Entity,

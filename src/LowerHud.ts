@@ -1,4 +1,5 @@
 import { canvas, TextCentered } from "./canvas"
+import { GuiIcons, WithIcon } from "./icons"
 import { HudScale, LowerHud } from "./layout"
 import { RootMenu } from "./menu"
 
@@ -120,7 +121,7 @@ function DrawBar(
 const rect = (x: number, y: number, width: number, height: number) =>
 	new Rectangle(new Vector2(x, y), new Vector2(x + width, y + height))
 
-const State = RootMenu.AddToggle("Lower HUD", true)
+const State = WithIcon(RootMenu.AddToggle("Lower HUD", true), GuiIcons.LowerHud)
 export function DrawLowerHud(): void {
 	const hero = Dota2SDK.LocalPlayer?.Hero
 	if (!State.value || hero === undefined) {

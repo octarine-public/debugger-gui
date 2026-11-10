@@ -1,4 +1,5 @@
 import { canvas, Scale } from "./canvas"
+import { GuiIcons, WithIcon } from "./icons"
 import { RootMenu } from "./menu"
 
 function UnitPath(name: string): string {
@@ -193,14 +194,14 @@ EventsSDK.on("EntityDestroyed", ent => {
 	}
 })
 
-const EntitiesNode = RootMenu.AddNode("Entities")
-const TreesState = EntitiesNode.AddToggle("Trees", true),
-	CreepsState = EntitiesNode.AddToggle("Creeps", true),
-	RunesState = EntitiesNode.AddToggle("Runes", true),
-	HeroesState = EntitiesNode.AddToggle("Heroes", true),
-	Other = EntitiesNode.AddToggle("Other", true),
-	Hitboxes = EntitiesNode.AddToggle("Hitboxes", false),
-	Icons = EntitiesNode.AddToggle("Icons", true)
+const EntitiesNode = RootMenu.AddNode("Entities", GuiIcons.Entities)
+const TreesState = WithIcon(EntitiesNode.AddToggle("Trees", true), GuiIcons.Trees),
+	CreepsState = WithIcon(EntitiesNode.AddToggle("Creeps", true), GuiIcons.Creeps),
+	RunesState = WithIcon(EntitiesNode.AddToggle("Runes", true), GuiIcons.Runes),
+	HeroesState = WithIcon(EntitiesNode.AddToggle("Heroes", true), GuiIcons.Heroes),
+	Other = WithIcon(EntitiesNode.AddToggle("Other", true), GuiIcons.Other),
+	Hitboxes = WithIcon(EntitiesNode.AddToggle("Hitboxes", false), GuiIcons.Hitboxes),
+	Icons = WithIcon(EntitiesNode.AddToggle("Icons", true), GuiIcons.Icons)
 
 function DrawHitboxes(): void {
 	EntityManager.AllEntities.forEach(ent => {

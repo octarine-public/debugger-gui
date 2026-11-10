@@ -1,5 +1,6 @@
 import { canvas } from "./canvas"
 import { DrawFpsGraph, FpsAt, LoadFps } from "./fpsGraph"
+import { GuiIcons, WithIcon } from "./icons"
 import { HudScale, LowerHud } from "./layout"
 import { RootMenu } from "./menu"
 
@@ -777,62 +778,91 @@ if (IsReplay) {
 if (IsReplay) {
 	const replayMenu = RootMenu.AddNode(
 		"Replay",
-		Menu.Icons.MonitorPlay,
+		GuiIcons.Replay,
 		"Moves through the telemetry recording octarine-debugger plays"
 	)
-	replayMenu
-		.AddButton("Play / pause", "Starts or stops playing the recording")
-		.OnValue(ToggleReplayPlaying)
-	replayMenu
-		.AddKeybind("Play / pause key", "", "Starts or stops playing the recording")
-		.OnRelease(ToggleReplayPlaying)
-	const speedSlider = replayMenu.AddSlider(
-		"Speed",
-		1,
-		0.25,
-		16,
-		2,
-		"Recording seconds per real second"
+	WithIcon(
+		replayMenu.AddButton("Play / pause", "Starts or stops playing the recording"),
+		GuiIcons.Play
+	).OnValue(ToggleReplayPlaying)
+	WithIcon(
+		replayMenu.AddKeybind(
+			"Play / pause key",
+			"",
+			"Starts or stops playing the recording"
+		),
+		GuiIcons.Key
+	).OnRelease(ToggleReplayPlaying)
+	const speedSlider = WithIcon(
+		replayMenu.AddSlider(
+			"Speed",
+			1,
+			0.25,
+			16,
+			2,
+			"Recording seconds per real second"
+		),
+		GuiIcons.Speed
 	)
 	speedSlider.OnValue(slider => SetReplaySpeed(slider.value))
 	onSpeed = value => (speedSlider.value = value)
-	replayMenu
-		.AddKeybind("Step", "", "Pauses and replays one tick")
-		.OnRelease(ReplayStepTick)
-	replayMenu
-		.AddKeybind("Back 10 s", "", "Replays from the start up to 10 s earlier")
-		.OnRelease(() => ReplaySeekBy(-10))
-	replayMenu
-		.AddKeybind("Forward 10 s", "", "Skips 10 s ahead")
-		.OnRelease(() => ReplaySeekBy(10))
-	replayMenu
-		.AddKeybind("Back 60 s", "", "Replays from the start up to 60 s earlier")
-		.OnRelease(() => ReplaySeekBy(-60))
-	replayMenu
-		.AddKeybind("Forward 60 s", "", "Skips 60 s ahead")
-		.OnRelease(() => ReplaySeekBy(60))
-	const goToTime = replayMenu.AddTextInput("Game time", "52:26")
-	replayMenu
-		.AddButton(
+	WithIcon(
+		replayMenu.AddKeybind("Step", "", "Pauses and replays one tick"),
+		GuiIcons.Step
+	).OnRelease(ReplayStepTick)
+	WithIcon(
+		replayMenu.AddKeybind(
+			"Back 10 s",
+			"",
+			"Replays from the start up to 10 s earlier"
+		),
+		GuiIcons.Back
+	).OnRelease(() => ReplaySeekBy(-10))
+	WithIcon(
+		replayMenu.AddKeybind("Forward 10 s", "", "Skips 10 s ahead"),
+		GuiIcons.Forward
+	).OnRelease(() => ReplaySeekBy(10))
+	WithIcon(
+		replayMenu.AddKeybind(
+			"Back 60 s",
+			"",
+			"Replays from the start up to 60 s earlier"
+		),
+		GuiIcons.BackFar
+	).OnRelease(() => ReplaySeekBy(-60))
+	WithIcon(
+		replayMenu.AddKeybind("Forward 60 s", "", "Skips 60 s ahead"),
+		GuiIcons.ForwardFar
+	).OnRelease(() => ReplaySeekBy(60))
+	const goToTime = WithIcon(
+		replayMenu.AddTextInput("Game time", "52:26"),
+		GuiIcons.Clock
+	)
+	WithIcon(
+		replayMenu.AddButton(
 			"Go to",
 			"Puts the replay at the game clock above (52:26, -1:30 before the horn)"
-		)
-		.OnValue(() => ReplaySeekGameTime(ParseGameTime(goToTime.text) ?? NaN))
-	replayMenu
-		.AddButton("Restart", "Replays from the recording's start")
-		.OnValue(() => ReplaySeek(0))
-	replayMenu
-		.AddToggle(
+		),
+		GuiIcons.GoTo
+	).OnValue(() => ReplaySeekGameTime(ParseGameTime(goToTime.text) ?? NaN))
+	WithIcon(
+		replayMenu.AddButton("Restart", "Replays from the recording's start"),
+		GuiIcons.Restart
+	).OnValue(() => ReplaySeek(0))
+	WithIcon(
+		replayMenu.AddToggle(
 			"Position",
 			true,
 			"The player over the lower HUD: restart, play or pause, the track to click a moment on and the speeds"
-		)
-		.OnValue(toggle => ShowReplayOverlay(toggle.value))
-	replayMenu
-		.AddToggle(
+		),
+		GuiIcons.Player
+	).OnValue(toggle => ShowReplayOverlay(toggle.value))
+	WithIcon(
+		replayMenu.AddToggle(
 			"FPS graph",
 			true,
 			"The game's frame rate over the recording above the player: faded the average, solid the lowest;\ngreen from 120, yellow from 60, red below; click a drop to go there"
-		)
-		.OnValue(toggle => (showFpsGraph = toggle.value))
+		),
+		GuiIcons.FpsGraph
+	).OnValue(toggle => (showFpsGraph = toggle.value))
 }

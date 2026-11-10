@@ -1,6 +1,7 @@
 import { canvas } from "./canvas"
+import { GuiIcons, WithIcon } from "./icons"
 import { HudScale, MinimapBox } from "./layout"
-import { RootMenu } from "./menu"
+import { AddSection } from "./menu"
 
 const BORDER_COLOR = new Color(0, 0, 0, 230),
 	BACKGROUND_COLOR = new Color(20, 26, 22),
@@ -70,14 +71,16 @@ function DrawBackground(box: Rectangle): void {
 	}
 }
 
-const MinimapNode = RootMenu.AddNode("Minimap")
-const State = MinimapNode.AddToggle("State", true),
-	CampsState = MinimapNode.AddToggle("Creep Camps", true),
-	CreepsState = MinimapNode.AddToggle("Creeps", true),
-	RunesState = MinimapNode.AddToggle("Runes", true),
-	CouriersState = MinimapNode.AddToggle("Couriers", true),
-	HeroesState = MinimapNode.AddToggle("Heroes", true),
-	BuildingsState = MinimapNode.AddToggle("Buildings", true)
+const [MinimapNode, State] = AddSection("Minimap", GuiIcons.Minimap)
+const CampsState = WithIcon(MinimapNode.AddToggle("Creep Camps", true), GuiIcons.Camps),
+	CreepsState = WithIcon(MinimapNode.AddToggle("Creeps", true), GuiIcons.Creeps),
+	RunesState = WithIcon(MinimapNode.AddToggle("Runes", true), GuiIcons.Runes),
+	CouriersState = WithIcon(MinimapNode.AddToggle("Couriers", true), GuiIcons.Couriers),
+	HeroesState = WithIcon(MinimapNode.AddToggle("Heroes", true), GuiIcons.Heroes),
+	BuildingsState = WithIcon(
+		MinimapNode.AddToggle("Buildings", true),
+		GuiIcons.Buildings
+	)
 
 export function DrawMinimap(): void {
 	if (!State.value) {

@@ -1,10 +1,11 @@
 import { canvas, Scale } from "./canvas"
+import { GuiIcons, WithIcon } from "./icons"
 import { RootMenu } from "./menu"
 import { RealTime } from "./replay"
 
 const storedFrameCount = 60
 const lastFramesCalls: number[] = []
-const State = RootMenu.AddToggle("Show FPS", true)
+const State = WithIcon(RootMenu.AddToggle("Show FPS", true), GuiIcons.FPS)
 export function DrawFPS(): void {
 	if (!State.value) {
 		return
