@@ -210,6 +210,7 @@ declare const Dota2SDK: {
 	readonly GridNavCellFlags: typeof GridNavCellFlags
 	readonly HUDPanel: typeof HUDPanel
 	readonly HallOfFame: typeof HallOfFame
+	readonly HeightMap: typeof HeightMap
 	readonly Hero: typeof Hero
 	readonly HitChance: typeof HitChance
 	readonly Humanizer: typeof Humanizer

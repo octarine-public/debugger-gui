@@ -13,7 +13,7 @@ declare class CMainThread {
 	 * Queues work for the next per-frame flush and resolves with its result. The task may be
 	 * sync or async, and may await native operations — the session is held for the whole batch.
 	 * @example
-	 * await MainThread.Queue(() => PanoramaSDK.Root(PanoramaWindow.Hud)?.Find("map_render"))
+	 * await MainThread.Queue(() => Source2SDK.Panorama.Find("DotaHud", "map_render")?.SetVisible(false))
 	 */
 	public Queue<T>(task: () => T | Promise<T>): Promise<T>
 }

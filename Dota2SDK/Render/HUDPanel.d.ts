@@ -117,6 +117,16 @@ declare class HUDPanel {
 	public HasClass(name: string): boolean
 	/** True when the panel or any of its ancestors carries the given CSS class. */
 	public AscendantHasClass(name: string): boolean
+	/**
+	 * The panel's attribute `name` as the game's layout or script set it, or `fallback` when it
+	 * has none or is gone. Main thread only.
+	 */
+	public Attribute(name: string, fallback?: string): string
+	/**
+	 * Runs `script` as JavaScript in the game's own Panorama, as `Panel.RunScript` does; nothing
+	 * while the panel is gone. Main thread only.
+	 */
+	public RunScript(script: string): void
 }
 /**
  * Owns the panel cache: the window roots, the interned CSS class symbols, and the two epochs

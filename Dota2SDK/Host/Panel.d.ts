@@ -41,6 +41,15 @@ declare class Panel {
 	public HasClass(name: string): boolean
 	/** True when the panel or any of its ancestors carries the given CSS class. */
 	public AscendantHasClass(name: string): boolean
+	/** Gives the panel the CSS class `name`. Main thread only. */
+	public AddClass(name: string): void
+	/**
+	 * The panel's attribute `name` as the game's layout or script set it, or `fallback` when the
+	 * panel has none.
+	 * @example
+	 * const hero = Number(card.Attribute("heroid", "-1"))
+	 */
+	public Attribute(name: string, fallback?: string): string
 	/**
 	 * Shows or hides the panel, the way the game does when it folds a HUD element away. A write
 	 * to the game's tree: run it on the main thread, through `MainThread.Queue`.
@@ -80,6 +89,8 @@ declare class Panel {
 	 * tier?.SetStyle("font-size: 14px; color: #ffffff;")
 	 */
 	public SetStyle(css: string): void
+	/** The text a `Label` panel shows; empty for a panel of another type. */
+	public get Text(): string
 	/** Sets the text a `Label` panel shows; a panel of another type ignores it. Main thread only. */
 	public SetText(text: string): void
 	/**
@@ -87,6 +98,14 @@ declare class Panel {
 	 * lies beneath; `true` lets the mouse reach them again. Main thread only.
 	 */
 	public SetHitTestEnabled(enabled: boolean): void
+	/**
+	 * With `true`, a click on the panel fires `Activated` and gives it the focus, as on a button;
+	 * `false` takes both away. Main thread only.
+	 * @example
+	 * option.SetClickable(true)
+	 * option.OnEvent("Activated", () => Pick(index))
+	 */
+	public SetClickable(enabled: boolean): void
 	/** Makes the panel the first child of its parent; a window's root stays as it is. Main thread only. */
 	public MoveFirst(): void
 	/**
@@ -98,4 +117,13 @@ declare class Panel {
 	 * const handle = button.OnEvent("Activated", () => (chosen = mode))
 	 */
 	public OnEvent(event: string, callback: (...args: unknown[]) => void): Nullable<number>
+	/**
+	 * Runs `script` as JavaScript in the game's own Panorama, where `$.GetContextPanel()` is the
+	 * panel loaded from a layout file nearest to this one: the panel itself when it has a layout
+	 * of its own, as a dashboard page does, and for a panel made with `CreateChild` the nearest
+	 * ancestor that has one. Main thread only.
+	 * @example
+	 * page.RunScript(`$.GetContextPanel().AddClass("Compact")`)
+	 */
+	public RunScript(script: string): void
 }

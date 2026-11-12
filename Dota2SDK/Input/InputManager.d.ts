@@ -310,6 +310,12 @@ interface CInputManager {
 	 */
 	readonly UnitUnderCursor: Nullable<Unit>
 	/**
+	 * The entity the game itself has under the cursor: the `weaponselect` of its user command, as
+	 * it is, with none of the checks {@link UnitUnderCursor} makes before it counts as clicked.
+	 * None while the game names nothing.
+	 */
+	readonly WeaponSelect: Nullable<Entity>
+	/**
 	 * Whether a click of the player's lands on `entity` right now - a rune or an item on the
 	 * ground, which the game picks by the cursor itself rather than its `weaponselect`: the
 	 * cursor stands on the world and inside the entity's bounding box as the screen shows it.

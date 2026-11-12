@@ -9,3 +9,17 @@ declare const WASM: {
 	 */
 	ScreenToWorld: ((screen: Vector2, cameraPosition: Vector3, cameraDistance: number, cameraAngles: QAngle, windowSize: Vector2) => Vector3)
 }
+
+/** Where the map's height map (its `.vhcg`) lies: the X and Y it covers, read as the map loads. */
+interface CHeightMap {
+	/** The corner with the lowest X and Y; a copy. */
+	get MinMapCoords(): Vector2
+	/** How far the height map reaches along X and along Y, in world units; a copy. */
+	get MapSize(): Vector2
+	/** The corner with the highest X and Y. */
+	get MaxMapCoords(): Vector2
+	/** Whether the X and Y of `pos` lie on the height map, its edges included. */
+	Contains(pos: Vector2 | Vector3): boolean
+}
+/** The current map's height map; undefined while no map has loaded or its `.vhcg` did not parse. */
+declare let HeightMap: Nullable<CHeightMap>
