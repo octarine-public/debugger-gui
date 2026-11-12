@@ -2,10 +2,11 @@
 /**
  * The prediction core: one cast, placed and scored. The mode follows the profile in the input:
  * a unit target gets a timeline and a hit check, a shape gets placed on the target's predicted
- * position, cut to range, checked for collisions and scored by how much of the target's
- * reachable region it covers, an area around the caster asks who will be inside. Everything
- * the core needs about the world arrives in the input; it never looks entities up itself. Each
- * ability owns one core, which owns the estimates and points it works with.
+ * position - a circle that activates after a delay led back so the target cannot walk out of it
+ * once it sees it laid (`CircleLead`) - cut to range, checked for collisions and scored by how
+ * much of the target's reachable region it covers, an area around the caster asks who will be
+ * inside. Everything the core needs about the world arrives in the input; it never looks entities
+ * up itself. Each ability owns one core, which owns the estimates and points it works with.
  */
 declare class CastPredictor {
 	/** `HitChance` for a probability, by the tuned thresholds. */

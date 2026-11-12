@@ -1,6 +1,5 @@
 // AUTO-GENERATED - do not edit.
 declare class snapfire_firesnap_cookie extends Ability {
-	protected AppliedFrom(values: ISpecialValues, level: number): number
 	public get ProjectileAttachment(): string
 	public get CookieSpeed(): number
 	public get JumpRange(): number
@@ -17,4 +16,18 @@ declare class snapfire_firesnap_cookie extends Ability {
 	public get AppliesUnitState(): bigint
 	/** The unit it is cast at hops and lands stunning the enemies round it. */
 	public get HitsAroundTarget(): boolean
+	/** Fed to herself, Snapfire hops the way she faces. */
+	public get MovesAlongFacing(): boolean
+	/** The unit fed - an ally, Snapfire herself - hops `JumpRange` the way it faces. */
+	public get MovesTarget(): boolean
+	/** The hop lasts `JumpDuration`. */
+	public MovesTargetFor(_target: Unit): number
+	/**
+	 * The hop of `target` fed by a cast going off at `landsAt`: the cookie flies to it first, from
+	 * Snapfire at `CookieSpeed` - none to herself - then the unit hops `JumpRange` the way it faces
+	 * over `JumpDuration`.
+	 */
+	public MotionOn(target: Unit, from: Vector3, _toward: Vector3, landsAt: number): Nullable<Motion>
+	/** The hop `MotionOn` gives `target` facing the way `way`: along it. */
+	public MotionAlong(target: Unit, _from: Vector3, way: Vector3, landsAt: number): Nullable<Motion>
 }

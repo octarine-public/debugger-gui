@@ -13,7 +13,13 @@ declare class skywrath_mage_mystic_flare extends Ability {
 	 * const twice = flare.SecondFlareRadius > 0 && point.Distance2D(enemy.Position) >= flare.AOERadius
 	 */
 	public get SecondFlareRadius(): number
-	protected DurationFrom(values: ISpecialValues, level: number): number
+	/**
+	 * Its point is never moved by the humanizer: the flare is small and aimed ahead of the target,
+	 * and with the scepter the point decides whom the second flare lands on - one at the target's
+	 * edge, out by its middle, takes the target twice; a few units off, once (6 November 2026,
+	 * отзыв пользователя: «рандом каст руинит с ультой аганимной»).
+	 */
+	public get KeepsCastPoint(): boolean
 	/**
 	 * The flare deals its damage only as it ticks: each `damage_interval` of `duration`, the first a
 	 * tick after it lands, the last as it ends, a share of `damage` split among the enemy heroes in

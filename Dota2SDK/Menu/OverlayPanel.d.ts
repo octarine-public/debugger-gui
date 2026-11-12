@@ -1,7 +1,19 @@
 // AUTO-GENERATED - do not edit.
 declare namespace MenuSDK {
+	/**
+	 * Where an {@link OverlayPanel} keeps its place and size. {@link OverlayMenu} is the one that
+	 * keeps them in menu rows.
+	 */
 	interface IOverlayMenu {
+		/**
+		 * The panel's top-left corner: read in screen px, and written in dp by the panel while it is
+		 * dragged.
+		 */
 		Position: Vector2
+		/**
+		 * The panel's size as a factor, 1 for 100%, for its content to draw at;
+		 * {@link OverlayPanel.Scale} reads a missing one as 1.
+		 */
 		Scale?: number
 		/**
 		 * Menu row a right-click on the panel reveals while the menu is open. A menu without one
@@ -9,21 +21,15 @@ declare namespace MenuSDK {
 		 */
 		readonly SetupEntry?: Entry
 	}
+	/** Rows under a menu node that keep an {@link OverlayPanel}'s place and size in the config. */
 	class OverlayMenu implements IOverlayMenu {
 		/** The node the panel's rows live under: what a right-click on the panel opens. */
 		public readonly SetupEntry: Entry
-		protected readonly x: Slider
-		protected readonly y: Slider
-		protected readonly scale: Slider
 		/**
-		 * The panel's place is carried by the hand that drags it, so the two sliders holding it stay
-		 * out of the page: they are where the place is kept and read back from a config, not how it
-		 * is set.
-		 *
-		 * The size can be carried the same way, by a panel that offers a corner to pull, but its
-		 * slider stays on the page: aiming at a corner is not the only way anyone should be able to
-		 * resize a card. Sizes use whole percentages by default; pass `1` as `scalePrecision` for
-		 * tenths of a percent. `defaultScale` is the size, in percent, the panel starts at.
+		 * Adds to `node` two hidden sliders for the panel's place, starting at `defaultX` and
+		 * `defaultY` in dp, and a "Size" slider the page shows, from 60 to 150 percent and starting
+		 * at `defaultScale`. `scalePrecision` is the decimal places of the size: 0 for whole
+		 * percent, 1 for tenths.
 		 * @example
 		 * new MenuSDK.OverlayMenu(node, 0, 309, 0, 82)
 		 */
@@ -31,6 +37,7 @@ declare namespace MenuSDK {
 		public get Scale(): number
 		/** Held to the range the slider offers, so a pulled corner cannot leave it unreachable. */
 		public set Scale(next: number)
+		/** The panel's top-left corner in screen px. It is set in dp, the unit the sliders hold. */
 		public get Position(): Vector2
 		public set Position(position: Vector2)
 		/** Takes the whole block off the page, or gives back the one row of it a page ever shows. */
@@ -39,7 +46,8 @@ declare namespace MenuSDK {
 	/**
 	 * A card pinned to a point in the world rather than to the screen. Same immediate-mode content
 	 * callback as {@link OverlayPanel}, but there is nothing to drag and nothing to persist: the
-	 * anchor comes from the caller every frame.
+	 * anchor comes from the caller every frame, and the core moves the card with the camera when the
+	 * frame is presented.
 	 *
 	 * @example
 	 * if (!panel.Draw(head, size, distance, origin => HudCard.Frame(new Rectangle(origin, origin.Add(size))))) {
@@ -47,9 +55,14 @@ declare namespace MenuSDK {
 	 * }
 	 */
 	class WorldPanel {
+		/**
+		 * `key` names the surface the card is drawn on, and two panels under one key share it. Left
+		 * out, each panel gets a key of its own.
+		 */
 		constructor(key?: string)
 		/** Draws the card centred above `world`, or hides it and answers `false` when off screen. */
 		public Draw(world: Vector3, size: Vector2, distance: number, content: (origin: Vector2) => void): boolean
+		/** Wipes the card off the screen now; nothing happens while it is not showing. */
 		public Hide(): void
 		/**
 		 * Lets go of the panel's surface for good, for a card whose anchor is gone - the entity
@@ -81,20 +94,32 @@ declare namespace MenuSDK {
 		 */
 		Always = 3
 	}
+	/**
+	 * A card on the screen that the user can drag into place. It keeps its place and size in the
+	 * {@link IOverlayMenu} it is built on and draws through a callback; the game's mouse events go
+	 * to {@link OverlayPanel.MouseKeyDown} and {@link OverlayPanel.MouseKeyUp} for the drag.
+	 *
+	 * @example
+	 * const panel = new MenuSDK.OverlayPanel(new MenuSDK.OverlayMenu(node, 20, 300), "my-card")
+	 * Events.on("Draw", () => panel.Draw(size, origin => DrawCard(origin)))
+	 * Events.on("MouseKeyDown", key => !MenuSDK.MenuManager.IsOpen || panel.MouseKeyDown(key))
+	 * Events.on("MouseKeyUp", () => panel.MouseKeyUp())
+	 */
 	class OverlayPanel {
 		/**
-		 * Whether the hint saying a right-click opens the panel's row in the menu comes out under the
-		 * panel once the cursor rests on it with the menu open. A panel the player works on all the
-		 * time - one whose clicks and drags are its own - turns it off: the hint would come out every
-		 * time the cursor stopped on it. The right-click still opens the row either way.
+		 * Whether a hint that a right-click opens the panel's row in the menu comes out under the
+		 * panel once the cursor has rested on it for half a second with the menu open. A panel with
+		 * clicks and drags of its own turns it off, or the hint comes out every time the cursor
+		 * stops on it. The right-click opens the row either way.
 		 *
 		 * @example
-		 * const panel = new OverlayPanel(menu, "combo-builder")
+		 * const panel = new MenuSDK.OverlayPanel(menu, "combo-builder")
 		 * panel.SetupHint = false
 		 */
 		public SetupHint: boolean
 		/** @param life when the panel stands; see {@link EPanelLife}. */
 		constructor(menu: IOverlayMenu, key?: string, life?: EPanelLife)
+		/** The size factor {@link IOverlayMenu.Scale} holds, or 1 when the menu has none. */
 		public get Scale(): number
 		/**
 		 * Whether a panel is in the hand: while one is, the place it is carried to goes into its rows
@@ -123,31 +148,44 @@ declare namespace MenuSDK {
 		 */
 		public SetInputExtent(extent?: Rectangle): void
 		/**
+		 * Draws the panel, `size` px large, at its stored place: `content` gets the top-left corner in
+		 * px and draws the card. Nothing is drawn while its {@link EPanelLife} keeps it down or one of
+		 * the game's own panels covers its top-left corner.
+		 *
 		 * @param dragHandleHeight how much of the panel's top edge starts a drag, in px. Nothing (the
 		 * default) makes the whole panel grabbable; a window with anything draggable of its own gives
 		 * its title bar's height, so a drag inside the content never moves the window.
 		 */
 		public Draw(size: Vector2, content: (origin: Vector2) => void, dragHandleHeight?: number): void
 		/**
-		 * Stands the panel exactly as it was last drawn at `size`, for a caller whose content would
-		 * come out the same this frame: the panel is placed and registered as {@link OverlayPanel.Draw}
-		 * does, and its surface keeps the last frame's elements instead of being drawn again. Answers
-		 * `false`, holding nothing, whenever the frame has to be drawn - the panel may not stand, is
-		 * covered, is in hand or was just put down, its hint is out, the hand is on it with the menu
-		 * open, the last frame laid out text the host had not measured yet, it would stand anywhere but
-		 * where the last frame was drawn, or the surface no longer shows the last frame, as after a
-		 * frame the panel was not drawn in - and the caller draws it instead. The menu open with the
-		 * cursor elsewhere holds as it does closed: nothing on the panel moves for the hand then, and a
-		 * caller whose frame differs with the menu open says so in what it compares.
+		 * Keeps the panel's last frame at `size` on screen instead of drawing it again, for a caller
+		 * whose content has not changed; the panel is placed and takes clicks as with
+		 * {@link OverlayPanel.Draw}. Answers `false`, keeping nothing, when the frame has to be drawn:
+		 * the panel may not show, is covered, in hand or just put down, shows its hint, has the
+		 * cursor on it with the menu open, has moved, or its last frame is gone or held text the host
+		 * had not measured. A caller whose content differs with the menu open compares that too.
 		 *
 		 * @example
 		 * if (!(unchanged && panel.Hold(size))) {
-		 * 	panel.Draw(size, origin => HudCard.Frame(new Rectangle(origin, origin.Add(size))))
+		 * 	panel.Draw(size, origin => DrawCard(origin))
 		 * }
 		 */
 		public Hold(size: Vector2): boolean
+		/**
+		 * Hands the panel a mouse press. A left press on it starts a drag, menu open or not, and a
+		 * right press with the menu open opens its row in the menu. Answers `false` when the panel
+		 * took the press and `true` to let it through, as an `Events.on("MouseKeyDown")` handler does.
+		 */
 		public MouseKeyDown(key?: VMouseKeys): boolean
+		/**
+		 * Puts the panel down if it is being dragged, writing its new place to the config once.
+		 * Always answers `true`, so the release reaches the game.
+		 */
 		public MouseKeyUp(): boolean
+		/**
+		 * Drops a drag in progress and wipes the panel off the screen. Presses pass through it until
+		 * the next {@link OverlayPanel.Draw}.
+		 */
 		public Reset(): void
 		/**
 		 * Takes the panel apart for good: the surface is dropped, the overlay registration stops

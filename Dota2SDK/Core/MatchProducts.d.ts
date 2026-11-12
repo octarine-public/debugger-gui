@@ -1,15 +1,9 @@
 // AUTO-GENERATED - do not edit.
 /**
- * A product a player in this match is known to have.
- *
- * {@link Ours} is the strong one: it means that account is running our product in
- * this match right now, read off the match it is playing.
- *
- * Every other value is much weaker. It means our own client found a folder by
- * that name in one of three fixed places on that machine the last time it looked,
- * and the record is never cleared — so a set bit is not evidence anyone is
- * running anything today, only that it was installed once. Equally, a product
- * installed somewhere else, or in a renamed folder, is simply not seen at all.
+ * A product a player of this match is known to have, as one bit of a mask.
+ * {@link MatchProduct.Ours} means the account is running our product in this match right now.
+ * Every other bit means only that our client once found that product installed on the player's
+ * machine: a set bit is not proof it is in use, and a clear one is not proof it is absent.
  */
 declare enum MatchProduct {
 	Ours = 1,

@@ -30,6 +30,8 @@ declare class doom_bringer_scorched_earth extends Ability implements IBuff {
 	 * The flames burn the enemies within `radius` of Doom while they last (`duration`):
 	 * `damage_per_second` each second, the first a second after the cast, the last as they end,
 	 * none after a unit walks out; the second is not in the data.
+	 * The 1 s between ticks is the server's own:
+	 * `CDOTA_Modifier_DoomBringer_ScorchedEarthEffectAura` thinks every 1 s (server.dll).
 	 */
 	public DamageOverTime(out: DamageTicks, level: number): boolean
 }

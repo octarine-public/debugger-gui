@@ -9,12 +9,13 @@ declare class viper_nethertoxin extends Ability {
 	 * after the cast, 0.27 s the whole way).
 	 */
 	public get SkillShotType(): ESkillShotType
-	protected DurationFrom(values: ISpecialValues, level: number): number
 	/**
 	 * The toxin hurts the units within `radius` while it lasts: each half second, the first half a
 	 * second after it lands, `min_damage` a second at first, rising evenly to `max_damage` over
 	 * `max_duration` from then, and on for half a second after a unit walks out; the half second is
 	 * the game's server's (`StartIntervalThink(0.5)`), not in the data.
+	 * The 0.5 s between ticks is the server's own: `CDOTA_Modifier_Viper_Nethertoxin` thinks every
+	 * 0.5 s (server.dll).
 	 */
 	public DamageOverTime(out: DamageTicks, level: number): boolean
 }

@@ -2,8 +2,8 @@
 /**
  * Amphibian Rhapsody: on, Largo's bar takes his three songs in the places of Catchy Lick,
  * Frogstomp and Croak of Genius (`Swaps`), and a song strummed on the beat - one every
- * `rhythm_interval` from the moment the rhapsody came on, `rhythm_grace_period` wide - takes; off
- * the beat it is lost.
+ * `rhythm_interval` from the beat the server shows (`modifier_largo_amphibian_rhapsody_self.BeatAt`),
+ * `rhythm_grace_period` wide - takes; off the beat it is lost.
  */
 declare class largo_amphibian_rhapsody extends Ability {
 	/** Whether the rhapsody on takes `ability` off Largo's bar, a song in its place. */

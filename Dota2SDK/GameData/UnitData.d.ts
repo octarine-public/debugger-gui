@@ -22,6 +22,15 @@ declare class UnitData {
 	 * const shotsPerSecond = ward !== undefined ? 1 / ward.BaseAttackTime : 0
 	 */
 	public static SummonedBy(abilityName: string): Nullable<UnitData>
+	/**
+	 * Whether the data of some unit - a hero, a creep, a summon - names the ability `name` as its
+	 * own: in any of its ability slots or a facet's. A toy a hero brings from the store (Dark
+	 * Carnival's pie and balloon, a snowball) is named by none: the game gives it to the hero in the
+	 * match.
+	 * @example
+	 * const fromStore = !UnitData.NamesAbility("seasonal_dark_carnival_pie") // true
+	 */
+	public static NamesAbility(name: string): boolean
 	public static GetUnitNameByNameIndex(index: number): Nullable<string>
 	public static GetHeroID(name: string): number
 	public static GetUnitDataByName(name: string): Nullable<UnitData>
@@ -47,6 +56,14 @@ declare class UnitData {
 	public readonly MinimapIcon: string
 	public readonly MinimapIconSize: number
 	public readonly HasInventory: boolean
+	/**
+	 * Whether the unit is a creep of the jungle's camps: its data marks it a neutral unit type
+	 * (`IsNeutralUnitType`) and builds it on the neutral creep class - not an event's neutral
+	 * unit, a Diretide greevil, nor Roshan.
+	 * @example
+	 * const campCreeps = [...UnitData.globalStorage.values()].filter(data => data.IsNeutralCreep)
+	 */
+	public readonly IsNeutralCreep: boolean
 	public readonly HealthBarOffset: number
 	public readonly WorkshopName: string
 	/**

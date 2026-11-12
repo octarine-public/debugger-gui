@@ -19,6 +19,11 @@ interface ICastTimelineOptions {
 	 */
 	readonly now?: boolean
 	/**
+	 * Time the order as an escape (`EOrderPriority.Escape`): ahead of a script's orders the humanizer
+	 * still holds, with no pause or reaction of its caster's. Off by default.
+	 */
+	readonly escape?: boolean
+	/**
 	 * Count what the ability must be made ready with before it can be ordered at all, such as
 	 * Invoker crafting the spell; off answers for a spell already in hand. On by default.
 	 */

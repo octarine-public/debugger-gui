@@ -4,11 +4,8 @@ declare class modifier_oracle_diviners_deck_the_tower extends Modifier implement
 	public readonly HasVisualShield = true
 	public readonly BuffModifierName: string
 	public readonly ShieldModifierName: string
-	protected readonly DeclaredFunction: Map<EModifierfunction, () => [number, boolean]>
 	public get StackCount(): number
 	public IsBuff(): this is IBuff
 	public IsShield(): this is IShield
-	protected GetTotalConstantBlock(): [number, boolean]
-	protected UpdateSpecialValues(): void
 	public get IsPurgable(): boolean
 }

@@ -4,11 +4,7 @@ declare class modifier_vengefulspirit_nether_swap_damage_reduction extends Modif
 	public readonly HasVisualShield = true
 	public readonly BuffModifierName: string
 	public readonly ShieldModifierName: string
-	protected readonly DeclaredFunction: Map<EModifierfunction, () => [number, boolean]>
 	public get StackCount(): number
 	public IsBuff(): this is IBuff
 	public IsShield(): this is IShield
-	protected GetTotalConstantBlock(): [number, boolean]
-	protected GetIncomingDamagePercentage(): [number, boolean]
-	protected UpdateSpecialValues(): void
 }

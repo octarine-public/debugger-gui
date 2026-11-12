@@ -8,6 +8,15 @@
 declare class AbilityPrediction {
 	constructor(owner: IPredictableAbility)
 	/**
+	 * Lets go of the units the predictions gathered in a world now past - the candidates, the
+	 * obstacles, the caster they were gathered for, the input's target and a list of candidates it
+	 * was handed - once a tick and at a game's end: an ability no longer asked, after a fight, held
+	 * the units of its last prediction - thinkers, illusions - after they were gone. Within the
+	 * world they were gathered in they stay (`Gathered`), the only one they serve: a world begins
+	 * with every listener.
+	 */
+	public static Release(): void
+	/**
 	 * Grows whenever the level, alt-cast state, theft, scepter, shard, facet or a talent of the
 	 * owner changes; equal versions mean an equal profile.
 	 */

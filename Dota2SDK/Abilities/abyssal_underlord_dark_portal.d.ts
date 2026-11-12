@@ -11,7 +11,6 @@
 declare class abyssal_underlord_dark_portal extends Ability {
 	/** Cast the way its caster stands: it turns to nothing (`Ability.RequiresFacing`). */
 	public get RequiresFacing(): boolean
-	protected DurationFrom(values: ISpecialValues, level: number): number
 	/**
 	 * Magical: the fire of its talent, the only damage it deals, takes the target's magic
 	 * resistance; the data gives it no type.
@@ -22,6 +21,8 @@ declare class abyssal_underlord_dark_portal extends Ability {
 	 * (`duration`): `dps` each second - the second not in the data - the first as they open, on for
 	 * a twentieth of a second after a unit walks out - its debuff's, not in the data. None without
 	 * the talent.
+	 * The 1 s between ticks is the server's own: `CDOTA_Modifier_Underlord_Portal_Fire_Effect`
+	 * thinks every 1 s (server.dll).
 	 */
 	public DamageOverTime(out: DamageTicks, level: number): boolean
 	public get CastRange(): number

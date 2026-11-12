@@ -4,9 +4,7 @@ declare class modifier_legion_commander_overwhelming_odds_shield extends Modifie
 	public readonly HasVisualShield = true
 	public readonly BuffModifierName: string
 	public readonly ShieldModifierName: string
-	protected readonly DeclaredFunction: Map<EModifierfunction, () => [number, boolean]>
 	public get StackCount(): number
 	public IsBuff(): this is IBuff
 	public IsShield(): this is IShield
-	protected GetTotalConstantBlock(): [number, boolean]
 }

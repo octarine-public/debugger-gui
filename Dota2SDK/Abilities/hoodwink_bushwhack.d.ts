@@ -30,7 +30,6 @@ declare class hoodwink_bushwhack extends Ability implements INuke {
 	 * const catches = bushwhack.TreesNear(enemy.Position, []).length !== 0
 	 */
 	public TreesNear(position: Vector3, out: Entity[], reach?: number): Entity[]
-	protected AppliedFrom(values: ISpecialValues, level: number): number
 	public IsNuke(): this is INuke
 	public GetBaseAOERadiusForLevel(level: number): number
 	public GetBaseSpeedForLevel(level: number): number
@@ -38,7 +37,9 @@ declare class hoodwink_bushwhack extends Ability implements INuke {
 	 * The net deals its damage only as it ticks, while it holds: each 0.3 s from as it catches, none
 	 * as it ends, `total_damage` split over the ticks of the whole `debuff_duration` - fewer under
 	 * the unit's status resistance, each the same. The 0.3 s is not in the data. It catches only
-	 * a unit with a tree in the net (`TickChance`).
+	 * a unit with a tree in the net (`TickChance`). The 0.3 s is the server's own: the net thinks
+	 * every frame and deals a tick for each whole 0.3 s since it caught, `damage_ticks` of them
+	 * (server.dll, `CDOTA_Modifier_Hoodwink_Bushwhack_Trap`).
 	 */
 	public DamageOverTime(out: DamageTicks, level: number): boolean
 	/**

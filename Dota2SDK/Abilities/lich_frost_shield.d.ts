@@ -7,4 +7,12 @@ declare class lich_frost_shield extends Ability {
 	 * a unit walks out.
 	 */
 	public DamageOverTime(out: DamageTicks, level: number): boolean
+	/**
+	 * The shield keeps `damage_reduction` percent of every blow off the unit it is cast at, of any
+	 * type, as long as it lasts: a barrier with no end taking that share (`BarrierShare`).
+	 */
+	public BarrierOn(_target: Unit): number
+	public get BarrierShare(): number
+	/** It stands `duration`. */
+	public GuardDuration(_target: Unit): number
 }

@@ -13,11 +13,26 @@ interface INavAgent {
 	/** Player-controlled units plan their route again every two seconds of walking. */
 	readonly IsControllableByAnyPlayer: boolean
 }
+/** What the walk's speed over time reads from a unit's modifiers; `UnitModifierManager` satisfies it. */
+interface ISpeedModifiers {
+	/**
+	 * Pushes the game times after `from` and before `to` a modifier giving move speed runs out;
+	 * whether any is still on at `from` (`UnitModifierManager.MoveSpeedChanges`).
+	 */
+	MoveSpeedChanges(from: number, to: number, out: number[]): boolean
+}
 /**
  * What movement prediction reads from a unit. `Unit` satisfies it structurally, so the prediction
  * core never imports the entity classes and adds no import cycle.
  */
 interface IMovingBody extends INavAgent {
+	readonly ModifierManager: ISpeedModifiers
+	/** The move speed expected at the game time `time`, `percentage` more besides (`Unit.MoveSpeedAt`). */
+	MoveSpeedAt(time: number, percentage?: number): number
+	/** The move speed with `percentage` percent more of it (`Unit.MoveSpeedWith`). */
+	MoveSpeedWith(percentage: number): number
+	/** How far the unit walks from the game time `from` to `to` (`Unit.WalkDistance`). */
+	WalkDistance(from: number, to: number, percentage?: number): number
 	/** Where the unit is, or was last seen. */
 	readonly Position: Vector3
 	readonly NetworkedPosition: Vector3
@@ -34,7 +49,11 @@ interface IMovingBody extends INavAgent {
 	TurnRate(): number
 	/** Seconds the unit needs to turn toward `target`: only as far as walking needs when `movement`. */
 	TurnTimeNew(target: Vector3, movement: boolean): number
+	/** Seconds the unit needs to turn by `angle` radians: only as far as walking needs when `movement`. */
+	TurnTimeForAngle(angle: number, movement: boolean): number
 	CanMove(): boolean
+	/** Whether the unit walks or flies at all, as its data and its flying states say (`Unit.HasMoveCapability`). */
+	HasMoveCapability(): boolean
 	/**
 	 * Game time the hold that keeps the unit where it stands begins: `now` for one the server
 	 * shows, the moment it lands for one a cast of ours is on its way to bring; `Infinity` for none.
@@ -91,6 +110,11 @@ interface IPredictionTarget extends IMovingBody {
 	readonly CourseChangeRate: number
 	PredictPosition(delay: number, options?: IMovementOptions, out?: MovementPrediction): MovementPrediction
 	PredictRegion(delay: number): IReachable
+	/**
+	 * The farthest the unit can be at the game time `to` from where it is at `from`: carried by a
+	 * motion, walking whenever nothing holds it.
+	 */
+	ReachBetween(from: number, to: number): number
 }
 /** What state attribution reads from a modifier: who it is, when it came and when it goes. */
 interface IStateCarrier {

@@ -15,7 +15,8 @@ declare class death_prophet_spirit_siphon extends Ability implements IDebuff {
 	 * The siphon deals its damage only as it drains: `damage` a second over each quarter second,
 	 * the first a quarter second after it lands, the last as it ends (`haunt_duration`), while the
 	 * link holds. The quarter second is not in the data, which gives `damage` a second.
+	 * The 0.25 s between ticks is the server's own: `CDOTA_Modifier_DeathProphet_SpiritSiphon`
+	 * thinks every 0.25 s (server.dll).
 	 */
 	public DamageOverTime(out: DamageTicks, level: number): boolean
-	protected DurationFrom(values: ISpecialValues, level: number): number
 }

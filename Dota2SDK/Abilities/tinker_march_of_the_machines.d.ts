@@ -2,6 +2,10 @@
 declare class tinker_march_of_the_machines extends Ability {
 	public GetBaseAOERadiusForLevel(level: number): number
 	public GetBaseSpeedForLevel(level: number): number
+	/** A robot hits with `collision_radius`: the march's `radius` is the width its robots set out across. */
+	public get ProjectileRadius(): number
+	/** A robot flies no wider at its end. */
+	public get ProjectileEndRadius(): number
 	/**
 	 * The robots of a march cast at the unit: `machines_per_sec` a second for `duration`, each
 	 * setting out from the back of the march - `radius` behind the point it is cast at - along a

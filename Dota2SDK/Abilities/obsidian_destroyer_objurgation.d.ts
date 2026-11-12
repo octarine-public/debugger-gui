@@ -15,4 +15,8 @@ declare class obsidian_destroyer_objurgation extends Ability implements IBuff {
 	 * (20 October 2026, demo).
 	 */
 	public get IsCombatBuff(): boolean
+	/** Its barrier takes `barrier_flat` and `mana_to_barrier` percent of his mana of damage of any type. */
+	public BarrierOn(_target: Unit): number
+	/** Its barrier stands `barrier_duration`. */
+	public GuardDuration(_target: Unit): number
 }

@@ -6,4 +6,6 @@ declare class item_pipe extends Item {
 	/** Its barrier stands `barrier_duration`. */
 	public GuardDuration(_target: Unit): number
 	public GetBaseAOERadiusForLevel(level: number): number
+	/** Its barrier goes on every unit of its bearer's side within its radius. */
+	public get GuardsAllies(): boolean
 }

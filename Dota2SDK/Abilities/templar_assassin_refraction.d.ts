@@ -10,4 +10,9 @@ declare class templar_assassin_refraction extends Ability implements IBuff, IShi
 	 * Psionic Trap - from 700 1.27 s into the fight, 0.06 s ahead of Meld (21 October 2026, demo).
 	 */
 	public get IsCombatBuff(): boolean
+	/**
+	 * Each instance takes a blow's damage whole, a stun of it landing all the same; how many of its
+	 * `instances` are left is not counted.
+	 */
+	public get GuardsDamage(): boolean
 }

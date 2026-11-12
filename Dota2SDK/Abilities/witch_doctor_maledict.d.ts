@@ -18,6 +18,8 @@ declare class witch_doctor_maledict extends Ability implements IDebuff {
 	 * `bonus_damage_threshold` health the unit lost since it landed (`DamageTicks.OfLost`). The
 	 * half second and the tenth are not in the data. What else hurts the unit meanwhile is not
 	 * counted toward its bursts.
+	 * The 0.5 s between ticks is the server's own: `CDOTA_Modifier_WitchDoctor_MaledictDoT` thinks
+	 * every 0.5 s (server.dll).
 	 */
 	public DamageOverTime(out: DamageTicks, level: number): boolean
 }

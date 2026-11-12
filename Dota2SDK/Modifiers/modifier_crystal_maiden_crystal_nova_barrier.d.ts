@@ -4,9 +4,7 @@ declare class modifier_crystal_maiden_crystal_nova_barrier extends Modifier impl
 	public readonly HasVisualShield = true
 	public readonly BuffModifierName: string
 	public readonly ShieldModifierName: string
-	protected readonly DeclaredFunction: Map<EModifierfunction, () => [number, boolean]>
 	public get StackCount(): number
 	public IsBuff(): this is IBuff
 	public IsShield(): this is IShield
-	protected GetPhysicalConstantBlockSpecial(): [number, boolean]
 }

@@ -8,4 +8,8 @@ declare class spirit_breaker_bulldoze extends Ability implements IBuff {
 	 * after the Nether Strike, 1.3 s past the Charge (21 October 2026, demo).
 	 */
 	public get IsCombatBuff(): boolean
+	/** Its barrier - a talent's - takes `damage_barrier` of any damage (INCOMING_DAMAGE_CONSTANT); none without it. */
+	public BarrierOn(_target: Unit): number
+	/** Its barrier stands `duration`. */
+	public GuardDuration(_target: Unit): number
 }

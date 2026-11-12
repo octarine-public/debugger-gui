@@ -4,10 +4,8 @@ declare class modifier_item_pipe_barrier extends Modifier implements IBuff, IShi
 	public readonly HasVisualShield = true
 	public readonly BuffModifierName: string
 	public readonly ShieldModifierName: string
-	protected readonly DeclaredFunction: Map<EModifierfunction, () => [number, boolean]>
 	public get StackCount(): number
 	public IsBuff(): this is IBuff
 	public IsShield(): this is IShield
-	protected GetMagicalConstantBlock(): [number, boolean]
 	public get IsPurgable(): boolean
 }

@@ -55,6 +55,16 @@ declare class NavGrid {
 	 */
 	public IsPassable(cell: number, hullRadius: number, flying: boolean, avoidUnits: boolean): boolean
 	/**
+	 * The centre of the cell nearest `position` on the plane that a unit of `hullRadius` can stand
+	 * in (`IsPassable`), no farther than `range` from it, written into `out`: where the game sets
+	 * down a unit teleported onto ground it cannot stand on - a blink into trees or past the map's
+	 * edge lands on the nearest clear spot (hero demo, 4 November 2026: Blink Dagger cast at
+	 * unwalkable ground set the hero down 58 and 187 units off it). `undefined` with none so near.
+	 * @example
+	 * const landing = grid.NearestPassable(point, hero.HullRadius, false, 300)
+	 */
+	public NearestPassable(position: Vector3, hullRadius: number, flying: boolean, range: number, out?: Vector3): Nullable<Vector3>
+	/**
 	 * Whether a unit that walks through trees can stand in the cell: walkable, and blocked by
 	 * nothing but trees.
 	 */

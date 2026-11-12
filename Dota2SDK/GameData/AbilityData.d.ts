@@ -10,8 +10,6 @@ declare class AbilityData {
 	public static GetAbilityByName(name: string): Nullable<AbilityData>
 	public static GetAbilityNameByID(id: number): Nullable<string>
 	public static GetItemRecipeName(name: string): Nullable<string>
-	protected static GetAbilityIDByName(name: string): Nullable<number>
-	protected static get HasDebug(): boolean
 	public readonly AbilityBehavior: DOTA_ABILITY_BEHAVIOR
 	public readonly AbilityType: ABILITY_TYPES
 	public readonly BonusStats: EDOTASpecialBonusStats
@@ -64,6 +62,11 @@ declare class AbilityData {
 	public readonly SpeciallyBannedFromNeutralSlot: boolean
 	public readonly CastAnimation: Nullable<GameActivity>
 	public readonly LinkedAbility: string
+	/**
+	 * The abilities its data names as its own (`SubAbilityNames`): those a cast of it lays - Nose
+	 * Dive's Nethertoxin and Corrosive Skin, Death Seeker's Death Pulse - or picks among.
+	 */
+	public readonly SubAbilityNames: string[]
 	public readonly ShouldBeInitiallySuggested: boolean
 	public readonly ItemStockInitial: Nullable<number>
 	public readonly ItemDisassembleRule: DOTA_ITEM_DISASSEMBLE

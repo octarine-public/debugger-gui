@@ -3,10 +3,11 @@ declare class earth_spirit_magnetize extends Ability {
 	public get CastRange(): number
 	public GetBaseAOERadiusForLevel(level: number): number
 	/**
-	 * Magnetize deals its damage only as it ticks: `damage_per_second` over each half second, the
-	 * first half a second after it lands, the last as it ends (`damage_duration`); a remnant's
-	 * explosion renews its time, not its ticks'. The half second is not in the data, whose
-	 * `damage_interval` is a whole one.
+	 * Magnetize deals its damage only as it ticks: `damage_per_second` over each half of its
+	 * `damage_interval`, the first that long after it lands, the last as it ends
+	 * (`damage_duration`); a remnant's explosion renews its time, not its ticks'. The half is the
+	 * server's code: the modifier's OnCreated starts thinking every `damage_interval` times 0.5
+	 * (server.dll, `CDOTA_Modifier_EarthSpirit_Magnetize`).
 	 */
 	public DamageOverTime(out: DamageTicks, level: number): boolean
 	/**

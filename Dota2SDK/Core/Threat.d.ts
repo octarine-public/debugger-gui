@@ -15,6 +15,8 @@ interface IThreatAbility {
 	readonly IsAttack: boolean
 	/** Whether the effect carries the unit it lands on somewhere: a push, a pull, a swap. */
 	readonly MovesTarget: boolean
+	/** Seconds the effect stands on the ground once it lands, hurting the units in its area while they stand in it: a field's; none for another. */
+	readonly LingersFor: number
 	/** Which units the projectile stops at on its way; `None` for one that flies through everything or has none. */
 	readonly CollisionFlags: CollisionFlag
 	/** Whose units the projectile collides with. */
@@ -48,9 +50,9 @@ interface IThreatAbility {
 	GetDamage(target: IPredictionTarget): number
 	/**
 	 * The damage it deals `target` within `seconds` after it lands at game time `landsAt`, its damage
-	 * over time with its blow, at the roll `strength`.
+	 * over time with its blow, at the roll `strength`, through `shields` when given.
 	 */
-	DamageUntil(target: IPredictionTarget, seconds: number, landsAt?: number, strength?: ATTACK_DAMAGE_STRENGTH): number
+	DamageUntil(target: IPredictionTarget, seconds: number, landsAt?: number, strength?: ATTACK_DAMAGE_STRENGTH, shields?: ShieldLedger): number
 }
 /**
  * How a threat still being aimed reaches units: a cast in progress can turn to anyone within
@@ -71,6 +73,11 @@ interface IThreatAim {
 	ImpactTime(unit: IPredictionTarget, horizon: number): Nullable<number>
 	/** Whether a unit of hull `hull` standing at `position` is inside the effect aimed at `unit`; `undefined` once the aim is settled. */
 	Covers(unit: IPredictionTarget, position: Vector3, hull: number): Nullable<boolean>
+}
+/** A projectile homing on the unit a threat is bound to (`TrackingSign`). */
+interface IThreatHoming {
+	/** Game time it reaches the spot its unit stands at from the game time `at`, walking until then. */
+	ReachesAt(at: number): number
 }
 /**
  * One effect on its way: an ability, the unit casting it, and the shape it covers over time
@@ -107,6 +114,8 @@ declare class Threat {
 	 * ends still comes.
 	 */
 	public Disjointable: boolean
+	/** The projectile homing on `Target` it comes as; none for the rest. */
+	public Homing?: IThreatHoming
 	constructor(Kind: EThreatKind, Ability: IThreatAbility, Caster: IPredictionTarget, 
 	/** The covered shape over time, in seconds from `Created`. */
 	Shape: IShapeTimeline, 
@@ -125,6 +134,12 @@ declare class Threat {
 	 * it, the moment it was settled at once nothing does (`Settle`).
 	 */
 	public get End(): number
+	/**
+	 * Whether the effect is a field standing on the ground: laid by what stays where it lands - a
+	 * thinker, its modifier, a particle - as long as that stays, and hurting the units in it while
+	 * they stand there (`IThreatAbility.LingersFor`): Macropyre, Shrapnel, Rot round Pudge.
+	 */
+	public get Lingers(): boolean
 	/** Whether the effect is bound to a unit and lands on it wherever it goes: no spot on the ground escapes it. */
 	public get Bound(): boolean
 	/**
@@ -171,6 +186,15 @@ declare class Threat {
 	 */
 	public ImpactTime(unit: IPredictionTarget, horizon: number): number
 	/**
+	 * Game time the effect lands on `unit` dodged at the game time `at` (`Disjointable`): a
+	 * projectile homing on it flies on to the spot it stood at then and lays its area there - Storm
+	 * Hammer's stun - later than it meets a unit walking into it, sooner than one walking away. Its
+	 * impact (`ImpactTime`) for the rest.
+	 * @example
+	 * const lands = threat.ImpactDodgedAt(hero, hero.ResponseTime(manta), PredictionSDK.Tuning.ThreatHorizon)
+	 */
+	public ImpactDodgedAt(unit: IPredictionTarget, at: number, horizon: number): number
+	/**
 	 * Game time the effect may last land on `unit` once it reached it (`ImpactTime`): a sweeping
 	 * projectile until it has passed the unit on its path - one it could not hurt as it came, an
 	 * invulnerable one, it hurts as soon as it can while it still covers it - and a bound effect
@@ -182,9 +206,10 @@ declare class Threat {
 	/**
 	 * Damage the effect may deal to `unit` after its resistances and blocks: its blow and every tick
 	 * of the damage over time it lays, the unit staying in its area and keeping it to the end
-	 * (`Ability.DamageUntil` at the highest roll).
+	 * (`Ability.DamageUntil` at the highest roll) - through `shields` as other blows left them,
+	 * spending them, when given, else through its shields as they stand.
 	 */
-	public Damage(unit: IPredictionTarget): number
+	public Damage(unit: IPredictionTarget, shields?: ShieldLedger): number
 	/**
 	 * Marks the effect answered for `unit` by `response` until the game time `until`: a response
 	 * to it is on its way or up, and every other reader leaves it to that response meanwhile

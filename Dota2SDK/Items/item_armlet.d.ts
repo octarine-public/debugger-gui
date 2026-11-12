@@ -35,6 +35,14 @@ declare class item_armlet extends Item {
 	 */
 	public UnholyStrengthAt(elapsed: number): number
 	/**
+	 * Health Unholy Strength adds to its bearer's current health `elapsed` seconds after it came
+	 * on: `HealthGainPerStrength` for its strength then, whole points or not - its maximum takes
+	 * only whole points of the bearer's strength (`UnholyHealthAt`); its drain not taken off.
+	 * @example
+	 * const gained = armlet.UnholyGainAt(item_armlet.UnholyRamp + GameState.TickInterval) // 550
+	 */
+	public UnholyGainAt(elapsed: number): number
+	/**
 	 * Health - its maximum, and its current health with it - Unholy Strength adds to `owner`
 	 * `elapsed` seconds after it came on: the game's health for every whole point of strength
 	 * over what `owner` has without it.

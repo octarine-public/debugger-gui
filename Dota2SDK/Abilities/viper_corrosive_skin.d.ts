@@ -6,6 +6,8 @@ declare class viper_corrosive_skin extends Ability {
 	 * (and as Nosedive lays it) - the last as it ends, `duration` after the latest hit; a hit
 	 * renews the time, not the ticks'. The second is not in the data. The Scepter's rise inside
 	 * Nethertoxin, up to `nethertoxin_bonus_pct`, is not weighed.
+	 * The 1 s between ticks is the server's own: `CDOTA_Modifier_Viper_CorrosiveSkin_Slow` thinks
+	 * every 1 s (server.dll).
 	 */
 	public DamageOverTime(out: DamageTicks, level: number): boolean
 }

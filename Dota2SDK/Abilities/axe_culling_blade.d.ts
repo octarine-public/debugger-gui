@@ -9,5 +9,4 @@ declare class axe_culling_blade extends Ability implements INuke {
 	 * its damage.
 	 */
 	public GetDamage(target: Unit, context?: IDamageContext): number
-	public GetBaseCastRangeForLevel(level: number): number
 }

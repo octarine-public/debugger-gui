@@ -4,10 +4,7 @@ declare class modifier_furion_teleport_shield extends Modifier implements IBuff,
 	public readonly HasVisualShield = true
 	public readonly BuffModifierName: string
 	public readonly ShieldModifierName: string
-	protected readonly DeclaredFunction: Map<EModifierfunction, () => [number, boolean]>
 	public get StackCount(): number
 	public IsBuff(): this is IBuff
 	public IsShield(): this is IShield
-	protected GetTotalConstantBlock(): [number, boolean]
-	protected UpdateSpecialValues(): void
 }

@@ -40,6 +40,11 @@ interface EventsMap {
 }
 
 interface EventsMap {
+	/**
+	 * The frame's world-shape stage, right after the interpolated positions are applied and before
+	 * `PreDraw`: what `WorldDraw` is given here is drawn with the camera of the frame on screen.
+	 */
+	WorldDraw: []
 	NewConnection: []
 	ConfigsChanged: []
 	PanoramaFrame: []
@@ -63,7 +68,15 @@ interface NativeEventsMap {
 	PanoramaWindowDestroy: [windowName: string]
 	CustomGameEvent: [eventName: string, data: RecursiveMap]
 	DebuggerPrepareUnitOrders: [isUserInput: boolean, wasCancelled: boolean]
-	Draw: [visualData: ArrayBuffer, w: number, h: number, x: number, y: number]
+	/** onScreen: the uint32 entity indices of the units on screen, undefined from a core that does not list them */
+	Draw: [
+		visualData: ArrayBuffer,
+		w: number,
+		h: number,
+		x: number,
+		y: number,
+		onScreen?: ArrayBuffer
+	]
 	GCPingResponse: []
 	GameEvent: [eventName: string, obj: unknown]
 	InputCaptured: [isCaptured: boolean]
@@ -76,6 +89,10 @@ interface NativeEventsMap {
 	WndProc: [messageType: number, wParam: bigint, lParam: bigint, x: number, y: number]
 }
 
+/**
+ * The emitter the SDK raises its events on: frames, key and mouse input, server ticks, entities
+ * created and destroyed. `EventsMap` lists every event with the arguments its listeners get.
+ */
 declare const Events: EventEmitter<EventsMap>
 
 interface EventsMap {
@@ -133,7 +150,11 @@ interface EventsMap {
 	TrackingProjectileUpdated: [proj: TrackingProjectile]
 	TrackingProjectileDestroyed: [proj: TrackingProjectile]
 	TrackingProjectilesDodged: [ent: Unit | FakeUnit, attacks_only: boolean]
-	UnitAnimation: [npc: Nullable<Unit | FakeUnit>, sequenceVariant: number, playbackrate: number, castpoint: number, type: number, activity: GameActivity, lagCompensationTime: number, rawCastPoint: number]
+	/**
+	 * `startTime` is the game time of the tick the animation began on, also when the client shows
+	 * several ticks in one frame: the game sends the message ahead of that tick's own `net_Tick`.
+	 */
+	UnitAnimation: [npc: Nullable<Unit | FakeUnit>, sequenceVariant: number, playbackrate: number, castpoint: number, type: number, activity: GameActivity, lagCompensationTime: number, rawCastPoint: number, startTime: number]
 	UnitAnimationEnd: [npc: Unit | FakeUnit, snap: boolean]
 	GameEvent: [eventName: string, obj: any]
 	/**
@@ -245,6 +266,10 @@ interface NativeEventsMap {
 		rankData4: number
 	]
 	DOTAFullHeroGlobalDataUpdated: [obj: unknown]
+	/** The account's switch for sharing the changer's items as the server keeps it, and whether the server has said yet */
+	ChangerShareEnabledChanged: [enabled: boolean, known: boolean]
+	/** The players whose units the changer dresses in the loadouts they share, the whole set each time it changes */
+	ChangerSharedPlayersChanged: [playerIDs: number[]]
 	/**
 	 * A move message went out (Beta native only): its `hrtime`, whether the commands are the
 	 * scripts' (false: the game's own) and the commands as the server decodes them.

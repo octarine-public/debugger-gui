@@ -24,8 +24,9 @@ declare enum EOrderDrop {
 	None = 0,
 	/**
 	 * Orders are bound to the cursor - the humanizer is off (`ExecuteOrder.CursorBound`) - and it is
-	 * no click the player could give right now: its unit not under the cursor, its point past
-	 * `ExecuteOrder.CursorReach` of the ground under it or the cursor on the HUD, a vector cast.
+	 * no click the player could give right now: its unit, rune or item not under the cursor, its
+	 * point past `ExecuteOrder.CursorReach` of the ground under it or the cursor on the HUD, a
+	 * vector cast.
 	 */
 	HumanizerOff = 1,
 	/** Its point lies off the map's height map: no click lands there. */

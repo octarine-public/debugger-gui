@@ -32,6 +32,13 @@ declare class PredictionTuning {
 	/** Seconds of watching the prior rate counts for. */
 	public CoursePriorWeight: number
 	/**
+	 * Seconds a unit walks on after a circle is laid in its way before it starts walking out of
+	 * it: a player's reaction to the effect appearing, the latency of the player's client with
+	 * it (`CircleLead`). A starting value agreed with the project owner on 4 November 2026, until
+	 * the hit telemetry fits it.
+	 */
+	public DodgeReaction: number
+	/**
 	 * Seconds before and after the moment a projectile passes a unit that the unit still counts in
 	 * its way: the moment is an estimate - the order's dispatch and the cast's start come early or
 	 * late - and a unit crossing the path at speed is clear of it by a hair at the moment alone.
@@ -53,8 +60,9 @@ declare class PredictionTuning {
 	 */
 	public ThreatLinger: number
 	/**
-	 * Seconds past its landing time a blow in `IncomingDamage` waits for the game to confirm it
-	 * before it is dropped: six ticks cover a report held back by lag.
+	 * Seconds past its landing time a blow in `IncomingDamage`, or a change of speed in
+	 * `IncomingSpeed`, waits for the game to confirm it before it is dropped: six ticks cover a
+	 * report held back by lag.
 	 */
 	public DamageLandingGrace: number
 	/**

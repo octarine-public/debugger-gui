@@ -31,6 +31,21 @@ interface IPredictOptions {
 	 * (`ICastTimelineOptions.searchBudget`); Infinity by default.
 	 */
 	readonly SearchBudget?: number
+	/**
+	 * Where a circle that activates after a delay is centred on a target walking on (`CircleLead`);
+	 * `Dodge` by default.
+	 */
+	readonly CircleLead?: ECircleLead
+	/**
+	 * Of the way from where the target stands now to the end of its course, the share `Share`
+	 * centres such a circle at: 0 - on the target, 1 - the end; a half by default.
+	 */
+	readonly CircleShare?: number
+	/**
+	 * Seconds a target walks on after such a circle is laid before it walks out of it, against
+	 * which `Dodge` places it; `PredictionTuning.DodgeReaction` by default.
+	 */
+	readonly DodgeReaction?: number
 }
 /**
  * The hooks the core calls back on the ability while it predicts; `Ability` implements them
@@ -87,6 +102,12 @@ declare class PredictionInput {
 	public UseBlink: boolean
 	public ExtraRangeFromCaster: number
 	public Delay: number
+	/** Where a circle that activates after a delay is centred on a target walking on. */
+	public CircleLead: ECircleLead
+	/** Of the way from the target to the end of its course, the share `Share` centres the circle at. */
+	public CircleShare: number
+	/** Seconds the target walks on after the circle is laid; the tuning's when none is given. */
+	public DodgeReaction: Nullable<number>
 	public readonly SourcePosition: Vector3
 	public SkillShotType: ESkillShotType
 	public Radius: number

@@ -9,4 +9,14 @@ declare class sven_warcry extends Ability implements IBuff {
 	 * 700, after God's Strength (21 October 2026, demo).
 	 */
 	public get IsCombatBuff(): boolean
+	/**
+	 * Its barrier - the Shard's - takes `base_barrier_amount` and `barrier_per_strength` for each
+	 * point of Sven's strength of physical damage (INCOMING_PHYSICAL_DAMAGE_CONSTANT); none without it.
+	 */
+	public BarrierOn(_target: Unit): number
+	public get BarrierType(): DAMAGE_TYPES
+	/** Its barrier stands `duration`. */
+	public GuardDuration(_target: Unit): number
+	/** It rallies the heroes of Sven's side within its radius, its barrier on each. */
+	public get GuardsAllies(): boolean
 }

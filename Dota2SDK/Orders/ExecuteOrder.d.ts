@@ -17,27 +17,67 @@ declare class ExecuteOrder {
 	public static lastMove: Nullable<[Vector3, number, readonly Unit[]]>
 	public static DebugOrders: boolean
 	public static DebugDraw: boolean
+	/**
+	 * Whether the humanizer logs, step by step, its camera - where it is and what moved it - its
+	 * cursor and what it goes to, the player's camera and cursor, and every order's way through it,
+	 * one JSON line a record into `globalThis.__humanizerLogBuf`, which cdp-mcp drains into its
+	 * `logs/humanizer.log`.
+	 * @example
+	 * ExecuteOrder.DebugLog = true
+	 */
+	public static get DebugLog(): boolean
+	public static set DebugLog(on: boolean)
 	public static HoldOrders: number
 	public static HoldOrdersTarget: Nullable<Vector3 | Entity>
+	/**
+	 * The unit the humanizer's camera stays centred on while a script holds its orders
+	 * (`HoldOrders`), as the player's does with the key that centres it on their hero held down:
+	 * orders about the unit - the steps of a creep block - never wait for the camera to pan to
+	 * them. An order to a point that camera does not show still moves it, as any other order
+	 * does. None: the camera moves for each order's target.
+	 * @example
+	 * ExecuteOrder.HoldOrders++
+	 * ExecuteOrder.HoldOrdersCamera = hero
+	 */
+	public static HoldOrdersCamera: Nullable<Unit>
+	/**
+	 * Whether the script that holds its orders (`HoldOrders`) steers its unit by hand: walk after
+	 * walk a few ticks apart, as with the right button held and the cursor led ahead of the unit -
+	 * a creep block. The cursor then goes on to each walk's point with no reaction before it
+	 * (`cursorReactionMs`): the hand is already leading it.
+	 * @example
+	 * ExecuteOrder.HoldOrders++
+	 * ExecuteOrder.HoldOrdersSteer = true
+	 */
+	public static HoldOrdersSteer: boolean
 	public static cameraMinimapSpaces: number
 	/**
-	 * Speed, world units a second, the humanizer's camera pans at by the screen's edge, whichever
-	 * way it goes: the player's own edge scroll's, `dota_camera_speed`.
+	 * Speed, world units a second, the humanizer's camera pans at for an order, by the screen's edge
+	 * or the arrows, whichever way it goes: the pan of a player whose "Camera speed" is 8000, the
+	 * owner's choice whatever the player's own `dota_camera_speed` is. The player's grip and arrows
+	 * move it at their own camera's speed instead.
 	 */
-	public static get cameraSpeed(): number
+	public static cameraSpeed: number
+	/**
+	 * Whether the humanizer pans its camera for an order by holding the arrows, its cursor waiting
+	 * where the target comes into view, rather than by taking the cursor to the screen's edge.
+	 */
+	public static CameraByArrows: boolean
 	public static cursorSpeed: number
 	public static cursorSpeedMinAccel: number
 	public static cursorSpeedMaxAccel: number
 	/**
 	 * Factor on the cursor's speed and acceleration while another order waits behind the one at the
-	 * head (an anti-miss flick), and while the cursor follows the player's own: their cursor, or
-	 * their order at the head.
+	 * head (an anti-miss flick), for an escape (`EOrderPriority.Escape`) - a flick with no undershoot
+	 * to correct, timed as the estimate times it - and while the cursor follows the player's own:
+	 * their cursor, or their order at the head.
 	 */
 	public static cursorBacklogBoost: number
 	public static cursorOvershoot: number
 	/**
 	 * Reaction, in ms, before the cursor glides from rest to the target of a script's order with no
-	 * other order waiting behind it; none for the player's own orders.
+	 * other order waiting behind it; none for the player's own orders nor for an escape
+	 * (`EOrderPriority.Escape`), timed by what it flees.
 	 */
 	public static cursorReactionMs: number
 	public static cursorArc: number
@@ -70,8 +110,11 @@ declare class ExecuteOrder {
 	 * Bounds, in game units, of how far a script's cast at a point lands from the point it was given:
 	 * drawn anew between the two for each such cast, at a random angle, so the casts do not hit the
 	 * exact computed point every time. Never past `CastSpreadRadiusShare` of the ability's area of
-	 * effect - a cast with none, a blink or a ward, keeps its point then. None while the humanizer is
-	 * off or bypassed; `CastSpreadMax` 0 for none.
+	 * effect - a cast with none, a blink or a ward, keeps its point then - and never where the server
+	 * would turn the cast down (`Ability.CanPlaceAt`): a Proximity Mine packed beside another keeps
+	 * its point unless the drawn one is free too. None for an ability whose point decides what it
+	 * takes (`Ability.KeepsCastPoint`: Mystic Flare), nor while the humanizer is off or bypassed;
+	 * `CastSpreadMax` 0 for none.
 	 * @example
 	 * ExecuteOrder.CastSpreadMin = 15
 	 * ExecuteOrder.CastSpreadMax = 60
@@ -102,7 +145,8 @@ declare class ExecuteOrder {
 	/**
 	 * How far, in game units, a script's order at a point may stand from the ground under the
 	 * cursor (`InputManager.CursorOnWorld`) and still go while orders are bound to the cursor
-	 * (`CursorBound`): it goes to the cursor's own point then. Measured on 26 October 2026 against
+	 * (`CursorBound`): it goes to the cursor's own point then. A script's walk this near it is the
+	 * player's cursor's under the humanizer too (`AtCursor`). Measured on 26 October 2026 against
 	 * 212 of the player's clicks with the humanizer off: a click lands on `CursorOnWorld` exactly
 	 * while the cursor stands still, and up to 42 units off it (95th percentile) while the cursor
 	 * moves 60-150 pixels a tick - its motion between the game's input and the frame that read it.
@@ -125,6 +169,15 @@ declare class ExecuteOrder {
 	 * @param issuer default: DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY
 	 */
 	constructor(OrderType: dotaunitorder_t, Target: Nullable<Entity | number>, Position: Vector3 | undefined, Ability_: Nullable<Ability | number>, Issuers: Unit[], Queue?: boolean, ShowEffects?: boolean, IsPlayerInput?: boolean)
+	/**
+	 * The ability or item the order uses, given by itself or by its entity's index; undefined for
+	 * an order that names none, and for a purchase, which names its item by the item's id.
+	 * @example
+	 * if (order.Ability instanceof Item && order.Ability.Name === "item_blink") {
+	 * 	// a blink is being cast
+	 * }
+	 */
+	public get Ability(): Nullable<Ability>
 	/**
 	 * Seconds the humanizer will hold an order issued now - of `priority`, going `now` or not -
 	 * before it reaches the game: the cursor glides of the orders that go before it - and, with
@@ -179,6 +232,16 @@ declare class ExecuteOrder {
 	/** Seconds left of `unit`'s pause after its last cast sent (`CastPauseMin`); 0 for none. */
 	public static CastPauseLeft(unit: Unit): number
 	/**
+	 * The ground under the cursor that gives the orders now: the humanizer's while orders go
+	 * through it, else the player's (`InputManager.CursorOnWorld`). An order at it waits for no
+	 * glide of the humanizer's cursor nor its reaction before one (`EstimateDispatchDelay`). The
+	 * vector is the live one: clone it to keep it.
+	 * @example
+	 * const spot = ExecuteOrder.CursorPoint.Clone()
+	 * const wait = ExecuteOrder.EstimateDispatchDelay(spot)
+	 */
+	public static get CursorPoint(): Vector3
+	/**
 	 * How many orders wait, not sent yet: in the humanizer's queue, or for a cast or a channel of
 	 * their units to end.
 	 */
@@ -188,6 +251,18 @@ declare class ExecuteOrder {
 	 * now that it has, and drops the waiting orders past their time; once a tick.
 	 */
 	public static ReleaseHeld(): void
+	/**
+	 * Notes an order the game sends itself - the player's, with the humanizer off: it takes the next
+	 * number of the order sequence (`TakenAt`).
+	 */
+	public static NoteGameSent(): void
+	/**
+	 * Marks the orders sent the server took, `taken` the last number of its order sequence
+	 * (`Player.ServerOrderSequenceNumber`) - every order sent takes the next one, in the order it
+	 * went; once a tick. A number the server took past the count - an order the SDK did not see -
+	 * moves the count on to it, and one sent and not taken in `untakenFor` seconds reads it anew.
+	 */
+	public static Take(taken: number): void
 	/**
 	 * Moves the casts sent on: started once the game shows them take, lost once their time has
 	 * passed or their units have left the game; once a tick.
@@ -207,7 +282,8 @@ declare class ExecuteOrder {
 	public static Promote(): void
 	/**
 	 * Whether a script holds the humanizer's cursor on a target between its orders: it claims units
-	 * (`OrderPolicy.Claim`), or raised `HoldOrders`.
+	 * with a target to wait on (`OrderPolicy.Claim`), or raised `HoldOrders`. A claim with none
+	 * leaves the cursor and the camera to the player between the script's orders.
 	 */
 	public static get Holding(): boolean
 	/** What the humanizer's cursor waits on between a holding script's orders. */
@@ -231,10 +307,17 @@ declare class ExecuteOrder {
 	 */
 	public static Discard(which: (order: ExecuteOrder) => boolean, reason: EOrderDrop): number
 	/**
-	 * Forgets the casts sent that the game has yet to show taking, for a match that is over: the
-	 * game will show none of them, and they are not settled into the next one.
+	 * Forgets the casts sent that the game has yet to show taking, and the orders the server has yet
+	 * to take with the count of its order sequence, for a match that is over: the game will show
+	 * none of them, and they are not settled into the next one.
 	 */
 	public static ForgetUnderway(): void
+	/**
+	 * Whether the head of the queue, unsent, waits for its cursor on a script's order while an
+	 * escape or the player's own waits behind it that may lead (`MayLead`): the humanizer leaves the
+	 * head for it - neither waits out the cursor's way to a script's order.
+	 */
+	public static get OvertakeWaiting(): boolean
 	public static get DisableHumanizer(): boolean
 	public static set DisableHumanizer(newVal: boolean)
 	/**
@@ -252,8 +335,9 @@ declare class ExecuteOrder {
 	 * now: the humanizer is off and not bypassed, or it is bypassed and `EmulateHumanizerOff` is
 	 * on. A script's walk, attack or cast goes then, once its units' own waits are through - the
 	 * pause after their last cast (`CastPauseMin`) and the reaction to its hero (`TargetReaction`)
-	 * - when it is at the unit under the cursor (`InputManager.UnitUnderCursor`) or at a point
-	 * within `CursorReach` of the ground under it, where it then lands; the rest are dropped
+	 * - when it is at the unit under the cursor (`InputManager.UnitUnderCursor`), a pickup of the
+	 * rune or item the cursor is on (`InputManager.IsUnderCursor`) or at a point within
+	 * `CursorReach` of the ground under it, where it then lands; the rest are dropped
 	 * (`EOrderDrop.HumanizerOff`) - but a double tap, a cast at the unit itself, which needs no
 	 * cursor. A cast of a vector ability is no one click and is dropped too.
 	 * @example
@@ -344,6 +428,17 @@ declare class ExecuteOrder {
 		computed?: boolean
 	}): ExecuteOrder
 	/**
+	 * Whether the order, not queued, takes its units off what they do now - a move, an attack, a
+	 * stop, a cast with a cast point or a channel, one at a unit or a point - as the humanizer's
+	 * queue counts one (`WillInterruptOrderQueue`); a toggle, a purchase, a skill learned, a cast
+	 * aimed by the caster's facing (`UsesRotation`) or a queued order does not.
+	 * @example
+	 * if (order.Interrupts && order.Issuers.includes(hero)) {
+	 * 	waiting.delete(hero)
+	 * }
+	 */
+	public get Interrupts(): boolean
+	/**
 	 * Where the order is on its way to the game: queued until it is sent or dropped; one whose units
 	 * rode another order (`merges`) is where that order is.
 	 * @example
@@ -356,6 +451,17 @@ declare class ExecuteOrder {
 	public get DropReason(): EOrderDrop
 	/** The game time the order was handed to the game; 0 before it was. */
 	public get SentAt(): number
+	/**
+	 * The game time the client saw the server take the order: its number reached in the server's
+	 * order sequence (`Player.ServerOrderSequenceNumber`) - taken, not yet shown done; 0 before, and
+	 * for one the SDK did not count. The server takes an order sent alone at times only with the
+	 * next one, the two in one tick.
+	 * @example
+	 * const late = order.TakenAt === 0 && GameState.RawGameTime > order.SentAt + GameState.AnswerLag
+	 */
+	public get TakenAt(): number
+	/** Its number in the game's order sequence, as the SDK counts it (`TakenAt`); -1 for none. */
+	public get Sequence(): number
 	/** The waiting order of the same click its units rode (`merges`); none. */
 	public get MergedInto(): Nullable<ExecuteOrder>
 	/**
@@ -365,6 +471,28 @@ declare class ExecuteOrder {
 	public get GivenPosition(): Vector3
 	/** The enemy unit a cast at a point or at nothing is meant for (`aimAt`); none if not given. */
 	public get AimAt(): Nullable<Unit>
+	/**
+	 * @internal Whether it is a script's walk the player's cursor gave as it entered the humanizer:
+	 * not `computed`, to the unit under the cursor (`InputManager.UnitUnderCursor`) or to a point
+	 * within `CursorReach` of the ground under it. The humanizer's cursor follows the player's for
+	 * it, with no reaction, as for the player's own click.
+	 */
+	public get AtCursor(): boolean
+	/**
+	 * @internal Whether it is the player's order given where their cursor was not as the game gave
+	 * it: at a unit the cursor was not on (`InputManager.IsUnderCursor`), or at a point off the
+	 * screen with no click on the minimap - a key or the HUD gave it: the
+	 * courier's delivery to the hero, a cast at an ally's portrait, a double tap of a Town Portal
+	 * Scroll to the fountain. It needs no cursor, the humanizer sends it at once, as the game's own.
+	 */
+	public get Keyed(): boolean
+	/**
+	 * @internal Whether it was a double tap as it went on its way - a cast at its issuer itself, or
+	 * one its ability takes for a double tap (`Ability.IsDoubleTap`): it needs no cursor, the
+	 * humanizer sends it as it comes up, though its unit walked or turned off the point meanwhile -
+	 * Magnetic Field's lies just ahead of the caster.
+	 */
+	public get Tapped(): boolean
 	/**
 	 * A cast's, once sent: the game time it shows it took by - its cast point, its channel or its
 	 * cooldown begun, a swing's projectile gone - else it is lost; moved on while the game holds it
@@ -424,8 +552,10 @@ declare class ExecuteOrder {
 	 * pass Position: Vector3 at IOBuffer offset 0
 	 * @param cursorWrites How many user commands written before this order already had the cursor on
 	 * its target: the native side sends the order as soon as the first of them has gone to the server.
+	 * @param holdsCursor Whether the order is given by the cursor on its target: while it waits for a
+	 * move message, that message ends with the user command written right after it.
 	 */
-	public toNative(cursorWrites?: number): {
+	public toNative(cursorWrites?: number, holdsCursor?: boolean): {
 		OrderType: dotaunitorder_t
 		Target: number
 		Ability: number
@@ -434,13 +564,18 @@ declare class ExecuteOrder {
 		ShowEffects: boolean
 		Flags: number
 		CursorWrites: number
+		HoldsCursor: boolean
 	}
 	/**
 	 * Execute order with this fields
 	 * @param cursorWrites How many user commands written before it already had the cursor on its
 	 * target; with none the order waits for the server to get the user command written after it.
+	 * An order given with no cursor (`NeedsCursor`) - a purchase, a key - waits for none and goes
+	 * with the next orders sent, as the game's own.
+	 * @param holdsCursor Whether it is given by the cursor on its target: the move message it waits
+	 * for ends with the user command written right after it, the cursor's later ones go in the next.
 	 */
-	public Execute(cursorWrites?: number): void
+	public Execute(cursorWrites?: number, holdsCursor?: boolean): void
 	/**
 	 * Gives the order: dropped while its units are someone else's for the moment (`OrderPolicy`) -
 	 * the player's, held by the humanizer, also when it would end a script's guard on them; else
@@ -464,5 +599,4 @@ declare class ExecuteOrder {
 	 * axes, as the cursor moves: a pixel up takes as long as a pixel across.
 	 */
 	public static GlideTime(from: Vector2, to: Vector2, queued: boolean): number
-	protected CanBeClickHeightMapPosition(): boolean
 }

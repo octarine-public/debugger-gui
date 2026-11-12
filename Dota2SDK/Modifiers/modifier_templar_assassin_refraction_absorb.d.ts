@@ -4,11 +4,7 @@ declare class modifier_templar_assassin_refraction_absorb extends Modifier imple
 	public readonly HasVisualShield = true
 	public readonly BuffModifierName: string
 	public readonly ShieldModifierName: string
-	protected readonly DeclaredFunction: Map<EModifierfunction, () => [number, boolean]>
 	public IsBuff(): this is IBuff
 	public IsShield(): this is IShield
-	protected GetAvoidDamage(): [number, boolean]
-	protected GetTotalConstantBlock(): [number, boolean]
-	protected UpdateSpecialValues(): void
 	public get IsPurgable(): boolean
 }

@@ -16,6 +16,8 @@ declare class ancient_apparition_ice_blast extends Ability {
 	 * the time, not the ticks'; the second is not in the data. A unit frostbitten below `kill_pct`
 	 * of its health shatters (`modifier_ice_blast.KillThreshold`). The target's status resistance
 	 * shortens it.
+	 * The 1 s between ticks is the server's own: `CDOTA_Modifier_AncientApparition_IceBlast` thinks
+	 * every 1 s (server.dll).
 	 */
 	public DamageOverTime(out: DamageTicks, level: number): boolean
 	public get CastRange(): number

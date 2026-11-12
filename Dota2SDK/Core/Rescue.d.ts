@@ -1,8 +1,8 @@
 // AUTO-GENERATED - do not edit.
 /**
  * What may keep a unit alive through what is on it and on its way (`Unit.DiesAt`): an instant heal
- * landing at a moment, an invulnerability standing over a stretch, a least health standing over a
- * stretch, a dispel landing at a moment.
+ * landing at a moment, an invulnerability standing over a stretch, an attack immunity standing
+ * over a stretch, a least health standing over a stretch, a dispel landing at a moment.
  * @example
  * const up = hero.ResponseTime(greaves)
  * const saved =
@@ -23,6 +23,12 @@ interface IRescue {
 	 */
 	readonly GuardFrom?: number
 	readonly GuardUntil?: number
+	/**
+	 * The game times an attack immunity stands from and till (Ghost Scepter): the attacks landing
+	 * in it miss, the rest lands (`IncomingDamageEntry.IsAttack`).
+	 */
+	readonly AttacksOffFrom?: number
+	readonly AttacksOffUntil?: number
 	/**
 	 * The game times a least health stands from and till (`Ability.KeepsAlive`: Shallow Grave):
 	 * the blows and the ticks land, but the unit's health goes no lower than 1 meanwhile.

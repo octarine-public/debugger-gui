@@ -12,6 +12,8 @@ declare class furion_curse_of_the_forest extends Ability {
 	 * The curse deals its damage only as it ticks: each second of `duration`, the first as it lands,
 	 * the last as it ends - fewer under the unit's status resistance. The second is not in the data.
 	 * Each tick is the trees' by the unit (`TickBonus`).
+	 * The 1 s between ticks is the server's own: `CDOTA_Modifier_Furion_CurseOfTheForest` thinks
+	 * every 1 s (server.dll).
 	 */
 	public DamageOverTime(out: DamageTicks, level: number): boolean
 	/**

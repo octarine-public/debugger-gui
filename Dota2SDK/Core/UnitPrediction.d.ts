@@ -15,6 +15,8 @@ declare class UnitPrediction {
 	public AbilitiesVersion: number
 	/** The blows on their way to the unit; `HealthAt` takes them off the health. */
 	public readonly IncomingDamage: IncomingDamage
+	/** The changes of its move speed on their way to the unit; `Unit.MoveSpeedAt` counts them from their landing. */
+	public readonly IncomingSpeed: IncomingSpeed
 	constructor(owner: IMovingBody)
 	/** The timeline the unit's own casts and responses are laid on. */
 	public get Timeline(): CastTimeline
@@ -49,7 +51,15 @@ declare class UnitPrediction {
 	 * cast again while she is in the air; `now` when nothing moves it.
 	 */
 	public get MotionUntil(): number
-	/** The states the unit is expected to be in right now, which `Unit.UnitStateMask` adds to the networked ones. */
+	/**
+	 * The unit's states as the game shows them: the server's mask while the unit is in sight; out of
+	 * sight, the last one it sent with the states the modifiers that came on the unit since surely
+	 * bring (`StateCarriers.SureOf`) and without those the ones that left alone could have brought -
+	 * a cyclone lifting a Riki who fades in it makes him invulnerable until it ends, not before nor
+	 * forever.
+	 */
+	public get StateMask(): bigint
+	/** The states the unit is expected to be in right now, which `Unit.UnitStateMask` adds to `StateMask`. */
 	public get ExpectedStateMask(): bigint
 	/**
 	 * Records that the unit is expected to hold `state` until the game time `until`, as right
@@ -77,7 +87,7 @@ declare class UnitPrediction {
 	/** The unit is no longer expected to be carried through `motion`. */
 	public ForgetMotion(motion: Motion): void
 	/**
-	 * Game time the networked `state` ends, as the modifiers that bring it say: the ones created
+	 * Game time `state` ends (`StateMask`), as the modifiers that bring it say: the ones created
 	 * the tick the state rose, and every one on the unit known to carry it - its class declares
 	 * it, or the game showed it - so a second stun laid on a first one counts. `now` when the unit
 	 * is not in the state; `Infinity` when nothing with a duration explains it, which is the safe
@@ -118,18 +128,34 @@ declare class UnitPrediction {
 	 */
 	public PredictPath(duration: number, step: number, destination: Nullable<Vector3>, ignoreDestination: boolean): Path
 	/**
+	 * How far the unit walks from the game time `from` to `to` at the speed it is expected to have
+	 * meanwhile (`Unit.MoveSpeedAt`), `percentage` more of it besides: its modifiers running out or
+	 * fading, the changes on their way landing (`IncomingSpeed`). A time that has passed is walked
+	 * at its speed now.
+	 */
+	public WalkDistance(from: number, to: number, percentage?: number): number
+	/**
+	 * Seconds the unit needs from the game time `from` to walk `distance` at the speed it is
+	 * expected to have meanwhile, `percentage` more of it besides; `Infinity` without a speed to
+	 * walk it with.
+	 */
+	public WalkTime(from: number, distance: number, percentage?: number): number
+	/**
 	 * The farthest the unit can be at the game time `to` from where it is at `from`, both from
 	 * now on: a motion - the game's, or a push of ours it is expected to go through - carries it
 	 * its own way, and whenever neither that nor a hold until `heldUntil` keeps it, it walks at
-	 * its speed whichever way it likes. An upper bound, for an effect placed around the unit at
-	 * one moment and landing at the other.
+	 * the speed it has meanwhile (`WalkDistance`, taken evenly over the walk) whichever way it
+	 * likes. An upper bound, for an effect placed around the unit at one moment and landing at the
+	 * other.
 	 */
 	public ReachBetween(from: number, to: number, heldUntil: number): number
 	/**
 	 * Every cell the unit can reach within `delay` seconds, the turn it has to make first
 	 * included: the set of places an enemy can be by then. A motion under way carries the unit
 	 * to its end first; only the time left after it is walked. An unseen unit reaches from where
-	 * it was last seen, for the time it has been out of sight too (`Unit.SeenAt`).
+	 * it was last seen, for the time it has been out of sight too (`Unit.SeenAt`). The walk goes
+	 * as far as the speed the unit has meanwhile takes it (`WalkDistance`): the region and its
+	 * arrival times are those of its speed now over the seconds that walk as far.
 	 */
 	public PredictRegion(delay: number): ReachableRegion
 	/** @internal The game shows the unit in `motion`; an expectation of it is confirmed. */
@@ -151,6 +177,26 @@ declare class UnitPrediction {
 	public SetDestination(position: Nullable<Vector3>): void
 	/** @internal */
 	public NoteAbilityLevelChanged(): void
+	/**
+	 * @internal `buff` came on the unit. Out of sight, the states it surely brings are taken as on;
+	 * in sight, it is checked against the server's mask once the game had the time to show them
+	 * (`settle`).
+	 */
+	public NoteModifierAdded(buff: IStateCarrier): void
+	/**
+	 * @internal `buff` left the unit. Out of sight, the states it could have brought go with it but
+	 * for those a modifier left on the unit could bring - a cyclone ended under an invisible Riki
+	 * leaves him invulnerable no longer.
+	 */
+	public NoteModifierRemoved(buff: IStateCarrier): void
+	/** @internal The server sent the unit's states: in sight, they are the ones it shows. */
+	public NoteNetworkedStates(): void
+	/**
+	 * @internal The unit came into sight or left it. Seen again, it shows the server's mask, every
+	 * modifier on it then checked against it (`settle`); out of sight, it keeps the last one, which
+	 * the modifiers coming and going change.
+	 */
+	public NoteVisibilityChanged(): void
 	/** @internal */
 	public Tick(): void
 	/** @internal */

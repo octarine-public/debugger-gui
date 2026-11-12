@@ -19,6 +19,8 @@ declare class dazzle_poison_touch extends Ability {
 	 * Poison Touch deals its damage only as it ticks: `damage` each second, the first as it lands,
 	 * the last as it ends. The second between ticks is not in the data, which gives `damage` a
 	 * second.
+	 * The 1 s between ticks is the server's own: `CDOTA_Modifier_Dazzle_Poison_Touch` thinks every
+	 * 1 s (server.dll).
 	 */
 	public DamageOverTime(out: DamageTicks, level: number): boolean
 	public GetBaseSpeedForLevel(level: number): number
@@ -26,6 +28,4 @@ declare class dazzle_poison_touch extends Ability {
 	public get IsCastBySoul(): boolean
 	/** A hex, cast by the soul (`IsCastBySoul`); nothing else holds what it strikes. */
 	public get AppliesUnitState(): bigint
-	/** The hex lasts the `poison_touch_hex` of its caster's Nothl Projection; none without one. */
-	protected AppliedFrom(_values: ISpecialValues, _level: number): number
 }

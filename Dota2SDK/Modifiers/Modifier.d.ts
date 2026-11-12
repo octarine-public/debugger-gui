@@ -1,6 +1,15 @@
 // AUTO-GENERATED - do not edit.
 type ModifierHandlerValue = (modifierParams?: IModifierParams) => [number, boolean]
 type ModifierMapFieldHandler = Map<EModifierfunction, ModifierHandlerValue>
+/**
+ * A chance proc a swing may carry (`Modifier.SwingProc`): its chance, 0 to 1; the multiplier its
+ * crit puts on the attack, 1 for none; the damage it adds on the target, its resistances taken.
+ */
+interface ISwingProc {
+	Chance: number
+	Multiplier: number
+	Damage: number
+}
 declare class Modifier {
 	public kv: IModifier
 	/**
@@ -31,11 +40,6 @@ declare class Modifier {
 	public NetworkArmor: number
 	public NetworkDamage: number
 	public NetworkFadeTime: number
-	/**
-	 * Whether the network's fade time holds a value of this modifier's own - a path's speed, a
-	 * portal's damage cut, Double Edge's damage - and no fade into invisibility.
-	 */
-	protected readonly FadeTimeIsValue: boolean
 	public NetworkBonusMana: number
 	public NetworkBonusHealth: number
 	public NetworkAttackSpeed: number
@@ -65,28 +69,35 @@ declare class Modifier {
 	public ShouldDoFlyHeightVisual: boolean
 	public HasShard: boolean
 	public HasScepter: boolean
-	protected CanPostDataUpdate: boolean
-	protected DeclaredFunction: Nullable<ModifierMapFieldHandler>
-	/**
-	 * The game's events the modifier acts on, and its properties it gives no value of here, as
-	 * server.dll declares them, and what it does that the game declares nothing for - the custom
-	 * keys of `EModifierfunction`: damage, heals, ticks of its own over time. Its unit's
-	 * `UnitModifierManager.Declaring` finds it by them.
-	 */
-	protected DeclaredEvents: Nullable<readonly EModifierfunction[]>
-	protected CachedAbilityName: Nullable<string>
 	public get StackCount(): number
 	public get ForceVisible(): boolean
 	public get Duration(): number
 	/**
 	 * How far the modifier has faded its parent into invisibility, 0 to 1, by the fade time the
 	 * network gives it: none for one whose fade time holds a value of its own
-	 * (`FadeTimeIsValue`).
+	 * (`FadeTimeIsValue`). Read only of the modifiers declaring
+	 * `MODIFIER_PROPERTY_INVISIBILITY_LEVEL` (`Unit.InvisibilityLevel`): those fading their parent
+	 * (`FadesParent`), and a class reading a level of its own declares it.
 	 */
 	public get InvisibilityLevel(): number
+	/**
+	 * Whether the network gives the modifier a fade time that is no value of its own
+	 * (`FadeTimeIsValue`): it fades its parent into invisibility, declared so as the game
+	 * declares it - `MODIFIER_PROPERTY_INVISIBILITY_LEVEL` - with any class of its own or none.
+	 */
+	public get FadesParent(): boolean
 	public get DeltaZ(): number
 	public get DieTime(): number
+	/**
+	 * Seconds the modifier has been on by the game time its unit's values are read for
+	 * (`UnitModifierManager.ReadTime`): now, or a later moment a prediction reads them at.
+	 */
 	public get ElapsedTime(): number
+	/**
+	 * Seconds the modifier has left at the game time its unit's values are read for
+	 * (`UnitModifierManager.ReadTime`): a slow fading with it - Viper Strike's - reads as it will
+	 * be then.
+	 */
 	public get RemainingTime(): number
 	/**
 	 * Seconds the modifier still has at the game time `time`: zero once it has expired,
@@ -126,22 +137,6 @@ declare class Modifier {
 	 * const freed = hero.Buffs.filter(buff => buff.DispelledBy(manta.DispelsCaster))
 	 */
 	public DispelledBy(dispel: SPELL_DISPELLABLE_TYPES): boolean
-	/**
-	 * `IsPurgable` as its ability's data says, for a class whose answer the server decides by code:
-	 * marked dispellable, `SPELL_DISPELLABLE_YES` or `SPELL_DISPELLABLE_YES_STRONG` - its ability
-	 * read off the game data when out of sight.
-	 */
-	protected get PurgableByData(): boolean
-	/**
-	 * `IsPurgeException` as its ability's data says, for a class whose answer the server decides by
-	 * code: marked dispellable - a strong dispel takes what any dispel does.
-	 */
-	protected get PurgeExceptionByData(): boolean
-	/**
-	 * `IsStunDebuff` as its ability's data says, for a class whose answer the server decides by
-	 * code: marked `SPELL_DISPELLABLE_YES_STRONG` - a basic dispel leaves it.
-	 */
-	protected get StunDebuffByData(): boolean
 	public get CanHitSpellImmuneEnemy(): boolean
 	public Update(force?: boolean): void
 	public GetTexturePath(): string
@@ -180,7 +175,27 @@ declare class Modifier {
 	/** Distance from `LeashAnchor` the bearer cannot leave; zero for a modifier that is no leash. */
 	public get LeashRadius(): number
 	public IsBuff(): this is IBuff
+	/**
+	 * Whether it is a debuff - what the game leaves out of a debuff-immune unit's values
+	 * (`IModifierParams.ImmuneFilter`). As the game's `IsDebuff` unless the class says otherwise:
+	 * one put on a unit of a team other than its caster's; with no caster known, none.
+	 */
 	public IsDebuff(): this is IDebuff
+	/**
+	 * Its rank among the modifiers giving a property the game takes one value of - a base attack
+	 * time, an attack point (`UnitModifierManager.GetConstantByPriorityInternal`): the value of the
+	 * highest-ranked one counts, whatever it is. The game's `GetPriority`
+	 * (`ModifierPriorityData.Default` unless its class gives its own).
+	 */
+	public get Priority(): number
+	/**
+	 * Whether its values count on a debuff-immune parent whatever the property's filter
+	 * (`IModifierParams.ImmuneFilter`), as the game decides it: its ability's target flags take
+	 * debuff-immune enemies (`MAGIC_IMMUNE_ENEMIES`) or its immunity type is
+	 * `SPELL_IMMUNITY_ENEMIES_YES` - unless its class or its ability's class decides it on its own,
+	 * as the game's do (Shiva's Guard's aura, Sharpshooter).
+	 */
+	public get PiercesDebuffImmunity(): boolean
 	/**
 	 * Whether the modifier keeps damaging its parent by itself while it lasts - a burn - so its
 	 * parent taken out of reach meanwhile, into a cyclone or a tornado, takes none of it: as it
@@ -188,6 +203,17 @@ declare class Modifier {
 	 * when.
 	 */
 	public get IsDamageOverTime(): boolean
+	/**
+	 * The damage its parent takes each time it launches an attack (`MODIFIER_EVENT_ON_ATTACK`),
+	 * through its resistances as they stand - Snakebite's punish; none by default
+	 * (`Unit.OwnAttackHits`).
+	 */
+	public get DamageOnOwnAttack(): number
+	/**
+	 * Whether the damage it keeps dealing its parent never kills it - it sets its parent's health,
+	 * 1 at least (`DamageTicks.SetsHealth`): the rum's hangover. None by default.
+	 */
+	public get NeverKills(): boolean
 	/**
 	 * Whether the hits of a spell add ticks through it (`HitOverTime`) - Searing Signet on the
 	 * caster, Prophet's Pendulum on the target - as it declares
@@ -213,6 +239,28 @@ declare class Modifier {
 	 */
 	public Declares(property: EModifierfunction): boolean
 	/**
+	 * Whether what the parent's attacks deal or bring depends on its hits so far
+	 * (`IModifierParams.HitsAhead`): Fury Swipes' stacks, Bash of the Deep's count. None by default.
+	 */
+	public get CountsHits(): boolean
+	/**
+	 * Seconds the parent's attack stuns `target` for as it lands, `hitsAhead` of the parent's hits
+	 * on it landing before (`IModifierParams.HitsAhead`): a bash. None by default.
+	 */
+	public SwingStun(_target: Unit, _hitsAhead: number): number
+	/**
+	 * The chance proc the parent's attack on `target` carries, written into `out`: a crit, a bash's
+	 * damage (`Unit.GetSwingDamage` counts it by the roll asked); `started` for a swing begun, whose
+	 * crit a crit animation has shown already. Whether it carries one; none by default.
+	 */
+	public SwingProc(_target: Unit, _started: boolean, _out: ISwingProc): boolean
+	/**
+	 * The blows it deals `victim` within `horizon` seconds when something sets it off, added to
+	 * `out` (`Unit.TriggeredBlows`): Counter Helix's spins as the hits on Axe count down. None by
+	 * default.
+	 */
+	public TriggeredBlows(_victim: Unit, _horizon: number, _out: IncomingDamageEntry[]): void
+	/**
 	 * The damage it blocks of each blow alone - Meat Shield's, what is left of Living Armor's: none
 	 * by default (`ShieldLedger`).
 	 */
@@ -236,9 +284,10 @@ declare class Modifier {
 	 * Shadow Word heals an ally - but damage taken off the unit's health as it is
 	 * (`DamageTicks.Removal`): Prophet's Pendulum's held damage on its own bearer. Each tick through
 	 * the parent's shields as the ones before left them: `shields` when given, else as they stand
-	 * (`ShieldLedger`).
+	 * (`ShieldLedger`). `hits`, when given, takes each tick it counts, named by its ability and its
+	 * kind of damage (`DamageHits.From`).
 	 */
-	public DamageUntil(time: number, strength?: ATTACK_DAMAGE_STRENGTH, shields?: ShieldLedger): number
+	public DamageUntil(time: number, strength?: ATTACK_DAMAGE_STRENGTH, shields?: ShieldLedger, type?: DAMAGE_TYPES, hits?: DamageHits): number
 	/**
 	 * Game time the last tick it deals its parent is due, of those `DamageUntil` counts at the roll
 	 * `strength` - the lowest by default - to its end: the one that finishes the parent when one
@@ -288,8 +337,6 @@ declare class Modifier {
 	public get HealPerSecond(): number
 	/** Health a second it heals `unit` standing around its parent with; none by default. */
 	public HealOf(_unit: Unit): number
-	/** Whether it heals the units around its parent (`HealOf`): one of `HealersAround`. */
-	protected get HealsAround(): boolean
 	/**
 	 * The damage its parent deals `unit` around it from now until the game time `time` at the roll
 	 * `strength` - the lowest by default - each tick through the unit's shields as the ones before
@@ -297,14 +344,15 @@ declare class Modifier {
 	 * set off from now on - a shot flying to the unit already is a blow on its way
 	 * (`Unit.HealthAt`) - and at the lowest only those set off while the unit cannot walk out of
 	 * their reach (`Unit.ImmobileUntil`), each at the unit by its chance (`Ability.TickChance`).
-	 * None for a modifier whose parent damages nothing around it.
+	 * None for a modifier whose parent damages nothing around it. `hits`, when given, takes each
+	 * tick it counts, named by its ability and its kind of damage (`DamageHits.From`).
 	 * @example
 	 * let shots = 0
 	 * for (const ward of Modifier.DamagersAround) {
 	 * 	shots += ward.DamageAround(enemy, GameState.RawGameTime + 2)
 	 * }
 	 */
-	public DamageAround(unit: Unit, time: number, strength?: ATTACK_DAMAGE_STRENGTH, shields?: ShieldLedger): number
+	public DamageAround(unit: Unit, time: number, strength?: ATTACK_DAMAGE_STRENGTH, shields?: ShieldLedger, type?: DAMAGE_TYPES, hits?: DamageHits): number
 	/**
 	 * Game time the last tick its parent deals `unit` is due, of those `DamageAround` counts at the
 	 * roll `strength` - the lowest by default; `-Infinity` for none.
@@ -315,14 +363,18 @@ declare class Modifier {
 	 * default - as soon as it may (`DamageTicks.NextAt`); `Infinity` for none.
 	 */
 	public NextDamageAroundAt(unit: Unit, from?: number): number
-	/** Whether its parent keeps damaging the units around it (`DamageAround`): one of `DamagersAround`. */
-	protected get DamagesAround(): boolean
 	/**
-	 * Fills `out` with the ticks its parent deals `unit` (`DamageTicks`), laid from the moment it
-	 * came on, each reaching the unit `After` the seconds it flies; whether it deals the unit any.
-	 * None by default.
+	 * Health regeneration a second it would give its parent with `health` of `maxHealth` and
+	 * `strength` - one whose regeneration its parent's health or strength sets: Berserker's
+	 * Blood's; 0 for one whose regeneration neither sets (`Unit.HealthRegenAt`).
 	 */
-	protected AroundTicks(_unit: Unit, _out: DamageTicks): boolean
+	public HealthRegenWith(_health: number, _maxHealth: number, _strength: number): number
+	/**
+	 * Magic resistance in percent it would give its parent with `health` of `maxHealth` - one whose
+	 * resistance its parent's health sets: Berserker's Blood's; 0 for one whose resistance it does
+	 * not set (`Unit.MagicTakenAt`).
+	 */
+	public MagicResistWith(_health: number, _maxHealth: number): number
 	/**
 	 * Fills `out` with the ticks it deals its parent at `level` (`DamageTicks`): its ability's
 	 * (`Ability.DamageOverTime`) by default; one dealing ticks of its own beside its ability's -
@@ -343,6 +395,14 @@ declare class Modifier {
 	 * const charge = buff.IsCharge // a cast now would end it
 	 */
 	public get IsCharge(): boolean
+	/**
+	 * Whether its parent stays invisible through a cast of any spell or item while it is on -
+	 * Shadow Dance: Power Treads toggled in it left Slark invisible, where the same toggle ended
+	 * Shadow Blade's invisibility at once (1 November 2026, demo).
+	 * @example
+	 * const hidden = buff.KeepsInvisibilityOnCast // a cast now does not reveal its parent
+	 */
+	public get KeepsInvisibilityOnCast(): boolean
 	/**
 	 * Whether the charge (`IsCharge`) goes on through a cast the game takes at once beside it
 	 * (`IMMEDIATE`) - Onslaught's windup through Trample (20 October 2026, demo); Phantom Rush is
@@ -367,18 +427,4 @@ declare class Modifier {
 	public IsPassiveDisabled(source?: Unit): boolean
 	public IsSuppressCrit(source?: Unit): boolean
 	public TestSpecialValue(): void
-	protected HasMeleeAttacksBonuses(source?: Unit): boolean
-	/** What a modifier class notes the moment it comes on its bearer - where its caster stood; nothing by default. */
-	protected OnAdded(): void
-	protected AddModifier(): boolean
-	/**
-	 * @param specialName name of the special
-	 * @param abilityName (e.g. "item_smoke_of_deceit", "item_moon_shard")
-	 * @param level optional (e.g. invoker_ghost_walk#WexLevel)
-	 * @return number
-	 */
-	protected GetSpecialValue(specialName: string, abilityName: string, level?: number, optional?: ISpecialValueOptions): number
-	protected UnitModifierChanged(): void
-	protected UpdateSpecialValues(): void
-	protected UnitPropertyChanged(_changed?: boolean): boolean
 }

@@ -1,5 +1,9 @@
 // AUTO-GENERATED - do not edit.
-/** The marker of the point the wisp flies to comes with the first tick of the cast point. */
+/**
+ * The marker of the point the wisp flies to comes with the first tick of the cast point, to Dark
+ * Willow's side only; her enemies see the wisp's channel on her creature then, from the fog too -
+ * her spot its fallback, the point unnamed, cut at once when she stops.
+ */
 declare class dark_willow_terrorize extends Ability {
 	public GetBaseAOERadiusForLevel(level: number): number
 	public GetBaseSpeedForLevel(level: number): number
@@ -12,6 +16,5 @@ declare class dark_willow_terrorize extends Ability {
 	 */
 	public get SkillShotType(): ESkillShotType
 	public GetBaseDamageForLevel(level: number): number
-	protected DurationFrom(values: ISpecialValues, level: number): number
 	public get AppliesUnitState(): bigint
 }

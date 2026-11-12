@@ -9,4 +9,6 @@ declare class tusk_walrus_kick extends Ability implements INuke {
 	public GetBaseDamageForLevel(level: number): number
 	/** How far the kick sends the target: `push_length`. */
 	public get PushLength(): number
+	/** Its target flies stunned for `air_time`. */
+	public get HitUnitState(): bigint
 }

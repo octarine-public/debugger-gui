@@ -1,10 +1,14 @@
 // AUTO-GENERATED - do not edit.
+/** Plays, stops and registers sound events. Use the `SoundSDK` instance. */
 declare class CSoundSDK {
 	/**
 	 * Plays a sound event by name.
 	 *
 	 * @param position where the sound is placed in the world; ignored by a game whose sound
 	 * manager is the portable panorama one, which can only play the event in 2D
+	 * @param guid an id to stop the sound by later with {@link EmitStopSoundEvent}; a sound started
+	 * with one that is still playing when the script unloads is stopped with it. On a core that
+	 * takes 0 as no guid, 0 leaves the sound to play to its own end
 	 * @example
 	 * SoundSDK.EmitStartSoundEvent("General.Ping")
 	 * SoundSDK.EmitStartSoundEvent("Roshan.Attack", entity.Position, entity)
@@ -25,15 +29,12 @@ declare class CSoundSDK {
 	 */
 	public EmitStopSoundEventByName(name: string, sourceEntity?: INativeEntity): void
 	/**
-	 * Registers the sound events a KV3 soundevent script declares — the text of a `.vsndevts`,
+	 * Registers the sound events a KV3 soundevent script declares: the text of a `.vsndevts`,
 	 * which maps each event name to an operator stack and the `.vsnd` files it plays. Afterwards
-	 * {@link EmitStartSoundEvent} plays them by name like any of the game's own.
-	 *
-	 * The compiled `.vsnd_c` files a script names are resolved by the game itself, so they have to
-	 * ship under the package's `scripts_files/fs` directory — the only one the game can see. The
-	 * script's own text is read by the cheat and may live anywhere under `scripts_files`.
-	 *
-	 * @param origin names the script in the engine's parser errors and keys its events, so
+	 * {@link EmitStartSoundEvent} plays them by name like any of the game's own. The compiled
+	 * `.vsnd_c` files the script names are resolved by the game, so they have to ship under the
+	 * package's `scripts_files/fs`; the script's own text may live anywhere under `scripts_files`.
+	 * @param origin names the script in the engine's parser errors and keys its events:
 	 * registering the same origin again replaces exactly what it registered before
 	 * @returns whether the script was taken. Its events are registered before any sound requested
 	 * after this call plays; a script that does not parse is reported in the log instead
@@ -54,4 +55,5 @@ declare class CSoundSDK {
 	 */
 	public UnregisterSoundEvents(origin: string): boolean
 }
+/** The game's sound events. */
 declare const SoundSDK: CSoundSDK

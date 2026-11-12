@@ -2,8 +2,7 @@
 declare class modifier_item_shivas_guard_aura extends Modifier implements IDebuff {
 	public readonly IsHidden = false
 	public readonly DebuffModifierName: string
-	protected readonly DeclaredFunction: Map<EModifierfunction, () => [number, boolean]>
 	public IsDebuff(): this is IDebuff
-	protected GetAttackSpeedBonusConstant(): [number, boolean]
-	protected UpdateSpecialValues(): void
+	/** The game's aura slows a debuff-immune enemy's attacks as well. */
+	public get PiercesDebuffImmunity(): boolean
 }

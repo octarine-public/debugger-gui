@@ -1,6 +1,10 @@
 // AUTO-GENERATED - do not edit.
 declare class juggernaut_omni_slash extends Ability {
 	public GetBaseAOERadiusForLevel(level: number): number
+	/** Juggernaut slashes invulnerable and immune to spells for its `duration`. */
+	public get AppliesUnitState(): bigint
+	/** The states are Juggernaut's own, cast at an enemy (`StatesTargetOf`). */
+	public get StatesOnCaster(): boolean
 	/** A slash: Juggernaut's attack and `bonus_damage`. */
 	public GetRawDamage(target: Unit): number
 	/** A slash of `raw` strikes as his attack does: through the target's armor and blocks. */

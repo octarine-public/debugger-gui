@@ -7,4 +7,8 @@ declare class riki_blink_strike extends Ability implements INuke {
 	public IsNuke(): this is INuke
 	public GetBaseDamageForLevel(level: number): number
 	public GetDamage(target: Unit): number
+	/** The data calls its targets custom: a unit of either side, an enemy hero too. */
+	public TargetTeamOf(): DOTA_UNIT_TARGET_TEAM
+	/** A hero or a creep. */
+	public TargetTypeOf(): DOTA_UNIT_TARGET_TYPE
 }

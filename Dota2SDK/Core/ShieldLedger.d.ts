@@ -42,6 +42,8 @@ declare class ShieldLedger {
 	public Pooled: boolean
 	/** Reads the shields of `target` as they stand: nothing taken off them yet. */
 	public Fill(target: Unit): this
+	/** Takes what is left of `other`'s shields as its own. */
+	public CopyFrom(other: ShieldLedger): this
 	/**
 	 * Of `block` - what the shields as they stand take off a blow of `type`, no more than the blow -
 	 * what they take off it landing at game time `at`, as they are left then: no more than they

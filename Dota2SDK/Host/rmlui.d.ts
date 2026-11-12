@@ -98,32 +98,6 @@ declare class HTMLElement {
 	public querySelector(selector: string): Nullable<HTMLElement>
 	public querySelectorAll(selector: string): HTMLElement[]
 	public scrollIntoView(alignWithTop: boolean): void
-	/** Per-element write cache; owned by menu-sdk `World/Write.ts`. The expando beats a WeakMap
-	 * on the hottest per-frame path, where the map lookup was the single biggest cost left. */
-	public worldSlots_?: Map<string, number | string>
-	/** The element's native style proxy, fetched once; owned by `World/Write.ts`. */
-	public worldStyle_?: RmlStyleDeclaration
-	/** The string the element's text node holds; owned by `World/Write.ts`. */
-	public worldText_?: string
-	/** The `src` an image element carries; owned by menu-sdk `World/Write.ts`. */
-	public hudSource_?: string
-	/** The artwork that source was minted from; same owner. */
-	public hudArt_?: string
-	/** The box in screen px it was minted for; same owner. */
-	public hudArtW_?: number
-	public hudArtH_?: number
-	public hudArtRadius_?: number
-	/** The rectangle of the artwork it was cut from; same owner. */
-	public hudArtRegion_?: {
-		readonly x: number
-		readonly y: number
-		readonly width: number
-		readonly height: number
-	}
-	/** The copy the element waits on while the host cuts it; same owner. */
-	public hudPending_?: string
-	/** The live text node inside the element; owned by `World/Write.ts`. */
-	public worldTextNode_?: HTMLElement
 	/**
 	 * Sets one px-valued property from a number, skipping the style string parser. The ordinal
 	 * indexes the host's fixed table: 0 left, 1 top, 2 width, 3 height, 4 margin-left,
@@ -142,6 +116,23 @@ declare class HTMLElement {
 		scaleX?: number,
 		scaleY?: number
 	): void
+	/**
+	 * Ties the element and everything it renders to anchor `slot` (Source 2's `CRenderAnchor`), or
+	 * unties it with -1: its box is laid out as if the anchor's point were the origin, it is drawn
+	 * where the anchor lands at every present, and it takes no input. Hosts predating anchors have
+	 * no such method.
+	 */
+	public setAnchor(slot: number): void
+	/**
+	 * Replaces what a `<hud-surface>` draws with the list in the first `byteLength` bytes of
+	 * `data`, in the format core's `hud_list.h` documents. False, drawing nothing, for a malformed
+	 * list; throws on any other element. Hosts predating HUD lists have no such method.
+	 */
+	public submitHud(data: ArrayBufferView | ArrayBuffer, byteLength: number): boolean
+	/** The string a `<hud-surface>`'s text commands name by `id`, below 4096. */
+	public setHudText(id: number, text: string): void
+	/** The image source a `<hud-surface>`'s image commands name by `id`, below 1024; "" for none. */
+	public setHudImage(id: number, source: string): void
 	public destroy(): void
 }
 

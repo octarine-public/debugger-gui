@@ -16,6 +16,8 @@ declare class axe_battle_hunger extends Ability implements IDebuff {
 	 * Battle Hunger deals its damage only as it ticks: `damage_per_second` over each half second,
 	 * the first as it lands, the last as it ends. The half second is not in the data, which gives
 	 * the damage a second.
+	 * The 0.5 s between ticks is the server's own: `CDOTA_Modifier_Axe_BattleHunger` thinks every
+	 * 0.5 s (server.dll).
 	 */
 	public DamageOverTime(out: DamageTicks, level: number): boolean
 }

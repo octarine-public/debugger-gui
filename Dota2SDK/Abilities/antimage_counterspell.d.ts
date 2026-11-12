@@ -7,6 +7,7 @@
  */
 declare class antimage_counterspell extends Ability {
 	public get BlocksTargetedSpells(): boolean
+	public get ReflectsTargetedSpells(): boolean
 	/**
 	 * Whether its shell, standing as `threat` lands, sends it back: an enemy's spell bound to a unit
 	 * (`Threat.Bound`) - homing on its owner, or still in its cast point, whether at him the
@@ -18,5 +19,4 @@ declare class antimage_counterspell extends Ability {
 	 * const back = antimage.Threats.some(threat => counterspell.SendsBack(threat))
 	 */
 	public SendsBack(threat: Threat): boolean
-	protected DurationFrom(values: ISpecialValues, level: number): number
 }

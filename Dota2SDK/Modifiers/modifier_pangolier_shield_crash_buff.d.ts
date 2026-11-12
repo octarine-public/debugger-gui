@@ -4,9 +4,7 @@ declare class modifier_pangolier_shield_crash_buff extends Modifier implements I
 	public readonly HasVisualShield = true
 	public readonly BuffModifierName: string
 	public readonly ShieldModifierName: string
-	protected readonly DeclaredFunction: Map<EModifierfunction, () => [number, boolean]>
 	public get StackCount(): number
 	public IsBuff(): this is IBuff
 	public IsShield(): this is IShield
-	protected GetTotalConstantBlock(): [number, boolean]
 }

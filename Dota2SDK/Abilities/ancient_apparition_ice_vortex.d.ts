@@ -7,6 +7,8 @@ declare class ancient_apparition_ice_vortex extends Ability {
 	 * half a second after a unit walks out - its debuff's half second; the second is not in the
 	 * data. Its own debuff lowers the unit's magic resistance (`spell_resist_pct`), weighed once on
 	 * it.
+	 * The 1 s between ticks is the server's own: `CDOTA_Modifier_AncientApparition_IceVortex`
+	 * thinks every 1 s (server.dll).
 	 */
 	public DamageOverTime(out: DamageTicks, level: number): boolean
 	public get IsAmplifier(): boolean

@@ -4,14 +4,8 @@ declare class modifier_necrolyte_ghost_shroud_active extends Modifier implements
 	public readonly IsHidden = false
 	public readonly BuffModifierName: string
 	public readonly ShieldModifierName: string
-	protected readonly CanPostDataUpdate = true
-	protected readonly DeclaredFunction: Map<EModifierfunction, () => [number, boolean]>
 	public IsBuff(): this is IBuff
 	public IsShield(): this is IShield
 	public PostDataUpdate(): void
-	protected GetMoveSpeedBonusConstant(): [number, boolean]
-	protected GetMagicalResistanceDecrepifyUnique(): [number, boolean]
-	protected GetAbsoluteNoDamagePhysical(): [number, boolean]
-	protected UpdateSpecialValues(): void
 	public get IsPurgable(): boolean
 }

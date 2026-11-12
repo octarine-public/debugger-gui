@@ -2,9 +2,11 @@
 declare class leshrac_diabolic_edict extends Ability {
 	public GetBaseAOERadiusForLevel(level: number): number
 	/**
-	 * The explosions around Leshrac: `num_explosions` of them, 0.2 s apart, the first as it is
-	 * cast, `damage` each at a unit it picks (`TickChance`); none after a unit walks out of
-	 * `radius`. The 0.2 s is not in the data.
+	 * The explosions around Leshrac: `num_explosions` of them, the first as it is cast, the rest
+	 * spread over its `AbilityDuration` but a tick - the server's code thinks every (duration - a
+	 * tick) / (explosions - 1) s (server.dll, `CDOTA_Modifier_Leshrac_Diabolic_Edict`), 0.2 s and a
+	 * little for 40 in 8 s - `damage` each at a unit it picks (`TickChance`); none after a unit
+	 * walks out of `radius`.
 	 */
 	public DamageOverTime(out: DamageTicks, level: number): boolean
 	/**

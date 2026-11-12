@@ -10,4 +10,8 @@ declare class tusk_walrus_punch extends Ability implements INuke {
 	 */
 	public get CastPoint(): number
 	public get AbilityBehaviorMask(): DOTA_ABILITY_BEHAVIOR
+	/** The punch is cast as an attack, as its data says - the mask above leaves that out. */
+	public get IsAttack(): boolean
+	/** Its target is thrown up, stunned, for `air_time`. */
+	public get HitUnitState(): bigint
 }

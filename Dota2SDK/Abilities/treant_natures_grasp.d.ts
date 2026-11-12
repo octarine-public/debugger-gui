@@ -5,6 +5,8 @@ declare class treant_natures_grasp extends Ability {
 	 * second over each quarter second for `vines_duration` and half a second after, as their aura
 	 * lingers, the first a tick after they latch, the last as that ends; none after a unit walks
 	 * out. The quarter and half seconds are not in the data.
+	 * The 0.25 s between ticks is the server's own: `CDOTA_Modifier_Treant_NaturesGrasp_Damage`
+	 * thinks every 0.25 s (server.dll).
 	 */
 	public DamageOverTime(out: DamageTicks, level: number): boolean
 	public GetBaseAOERadiusForLevel(level: number): number
@@ -15,6 +17,5 @@ declare class treant_natures_grasp extends Ability {
 	 * sets only the line's direction.
 	 */
 	public GetBaseSpeedForLevel(level: number): number
-	protected DurationFrom(values: ISpecialValues, level: number): number
 	public GetBaseActivationDelayForLevel(level: number): number
 }

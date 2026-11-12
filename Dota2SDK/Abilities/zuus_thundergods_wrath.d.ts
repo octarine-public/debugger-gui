@@ -8,6 +8,7 @@ declare class zuus_thundergods_wrath extends Ability implements INuke {
 	 */
 	public get IsFinisher(): boolean
 	public GetBaseAOERadiusForLevel(_level: number): number
+	public get HitsEveryEnemy(): boolean
 	/** The strike lands on every enemy hero the tick after the cast point, not with it. */
 	public GetBaseActivationDelayForLevel(_level: number): number
 	public GetBaseDamageForLevel(level: number): number
