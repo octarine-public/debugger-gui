@@ -18,10 +18,11 @@ const GameTimeState = WithIcon(
 
 function RenderAttachment(
 	ent: Entity,
-	animationID: number,
-	attachmentID: number,
-	color: Color,
-	name: string
+	activity: GameActivity,
+	sequence: number,
+	fps: number,
+	name: string,
+	color: Color
 ): void {
 	const time = GameTimeState.value
 		? ent.AnimationTime
@@ -29,17 +30,18 @@ function RenderAttachment(
 			? ent.LastAnimationCastPoint // ?
 			: ent.AnimationTime
 
-	const fps = animationID !== -1 ? ent.Animations[animationID].fps : 1
-	ent.Position.toIOBuffer()
-	IOBuffer[2] += ent.DeltaZ
-	ent.Angles.toIOBuffer(3)
-	ent.ModelData!.getAttachmentData(
-		animationID,
-		attachmentID,
-		time + Offset.value / fps,
-		ent.ModelScale
+	const position = ent.Position
+	const screenPos = RendererSDK.WorldToScreen(
+		ent.GetAttachmentPosition(
+			name,
+			activity,
+			sequence,
+			time + Offset.value / fps,
+			new Vector3(position.x, position.y, position.z + ent.DeltaZ),
+			ent.Angles,
+			ent.ModelScale
+		)
 	)
-	const screenPos = RendererSDK.WorldToScreen(Vector3.fromIOBuffer())
 
 	if (screenPos === undefined) {
 		return
@@ -60,20 +62,21 @@ export function DrawAttachments(): void {
 		if (!ent.IsVisible || ent.ModelData === undefined) {
 			return
 		}
-		const animationID =
-			ent.GetAnimationID(
-				ent instanceof Unit
-					? useNetworkActivity.value
-						? ent.NetworkActivity
-						: ent.LastActivity
-					: GameActivity.ACT_DOTA_IDLE,
-				ent instanceof Unit
-					? useNetworkActivity.value
-						? ent.NetworkSequenceIndex
-						: ent.LastActivitySequenceVariant /** ?? */
-					: 0
-			) ?? -1
-		ent.Attachments.forEach((attachment, i) => {
+		const activity =
+			ent instanceof Unit
+				? useNetworkActivity.value
+					? ent.NetworkActivity
+					: ent.LastActivity
+				: GameActivity.ACT_DOTA_IDLE
+		const sequence =
+			ent instanceof Unit
+				? useNetworkActivity.value
+					? ent.NetworkSequenceIndex
+					: ent.LastActivitySequenceVariant /** ?? */
+				: 0
+		const animationID = ent.GetAnimationID(activity, sequence) ?? -1
+		const fps = animationID !== -1 ? ent.Animations[animationID].fps : 1
+		ent.Attachments.forEach(attachment => {
 			let color: Color
 			switch (attachment) {
 				case "attach_hitloc":
@@ -86,7 +89,7 @@ export function DrawAttachments(): void {
 					color = Color.White
 					break
 			}
-			RenderAttachment(ent, animationID, i, color, attachment)
+			RenderAttachment(ent, activity, sequence, fps, attachment, color)
 		})
 	})
 }
